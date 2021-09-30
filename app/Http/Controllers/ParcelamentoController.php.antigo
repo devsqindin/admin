@@ -1,0 +1,260 @@
+<?php
+
+namespace App\Http\Controllers;
+
+use Illuminate\Http\Request;
+use App\SolicitacaoParcelamento;
+use App\Fatura;
+use App\Usuario;
+use App\Taxa;
+use Auth;
+use Notification;
+use App\Notifications\Analyze;
+use App\Notifications\ClosedInvoice;
+use App\Notifications\DelayedInvoice;
+use DB;
+
+class ParcelamentoController extends Controller
+{
+    
+    public $maxdecimal = 7;
+    public $initcet = '';
+    public $arrdias = [];
+
+    public function fNum ($num) {
+        $num = str_replace(".","",$num);
+        return str_replace(",",".",$num);
+    }
+
+    public function diasIntervalo($dtini,$qtdparcelas) {
+        $this->arrdias = [];
+        for($p=1;$p<=$qtdparcelas;$p++) {
+            $dtatual = strtotime($dtini);
+            $dtatual = date("Y-m-d", strtotime("+$p month", $dtatual));
+            
+            $datetime1 = new \DateTime($dtini);
+            $datetime2 = new \DateTime($dtatual);
+            $interval = $datetime1->diff($datetime2)->format('%a');
+            
+            $this->arrdias[] = intval($interval);
+        }
+    }
+
+    public function calculaCET($credito,$fcj) {
+        $this->initcet='';
+        for($c=0;$c<$this->maxdecimal;$c++) {
+            $this->initcet .= '0';
+        }
+        return $this->procurarCET($credito,$fcj,$this->initcet)/10000;
+    }
+
+    public function procurarCET($credito,$fcj,$cet,$decimal=0) {
+        //global $arrdias, $fcj, $credito, $maxdecimal;
+        if ($decimal > $this->maxdecimal) {
+            return $cet;
+        } else {
+            for($i=0;$i<=9;$i++) {
+                $cet[$decimal] = $i;
+                
+                $resultado = 0;
+                foreach($this->arrdias as $dia) {
+                    $resultado += $fcj/((1+floatval("0.$cet")*(10**($this->maxdecimal-5)))**($dia/365));
+                }
+                
+                if (($resultado - $credito) == 0) {
+                    return $cet;
+                } else if (($resultado - $credito) > 0) {
+                    // continue
+                } else if (($resultado - $credito) < 0) {
+                    if ($i == 0) {
+                        return $cet;
+                    } else {
+                        $cet[$decimal] = $i - 1;
+                    }
+                    break;
+                }
+            }
+            return $this->procurarCET($credito,$fcj,$cet,$decimal+1);
+        }
+    }
+
+    public function financiar($valor,$taxa_juros,$meses,$userId) { //$valor,$taxa_juros,$meses
+        // referencia
+
+        // $valor = 100;
+        // $taxa_juros = 0.0999;
+        // $meses = 3;
+
+        // taxas
+
+        $taxas = Taxa::where('slug','!=','taxaint')->get()->pluck('valor','slug');
+        $txint = Taxa::where('slug','=','taxaint')->where('nparcela',$meses)->first();
+
+        $valor_fiducia = $valor * $taxas['taxa_core'];
+        $montante_iof = $valor * ($taxas['taxam_iof'] + ( ($meses*30)*$taxas['taxad_iof'] ));
+        $tarifa_fiducia = $taxas['tarifa_core'];
+        $tarifa_serasa = $taxas['tarifa_serasa'];
+        $add_taxas =  $valor_fiducia + $montante_iof + $tarifa_fiducia + $tarifa_serasa;
+        $base_prestacao = $valor + $add_taxas;
+
+        $prestacao = ( $base_prestacao * ( ((1+$taxa_juros)**$meses*$taxa_juros)/((1+$taxa_juros)**$meses-1) ) );
+
+        $taxa_int = $txint['valor'];
+        $valor_cardholder = $valor / (1-$taxas['taxa_intermedia']) * (((1+$taxas['taxa_cardholder'])**$meses)-1);
+        $valor_intermediador = $valor * ($taxa_int-$taxas['taxa_intermedia']);
+
+        $repasse = $valor_cardholder+$valor_intermediador;
+        $repasse_parcela = $repasse / $meses;
+
+        $prestacao_final = $prestacao + $repasse_parcela;
+
+        $prestacao_final = floatval(number_format($prestacao_final,2,'.',''));
+
+        $user = Usuario::find($userId);
+
+        $fatura = Fatura::where('id_usuario',$userId)->where('fechamento',0)->first();
+
+        if (isset($fatura->vencimento)) {
+            $dtini = $fatura->vencimento;
+        } else {
+            $proxvence = date("Y-m-").$user->vence_fatura;
+            if (date("U") > date("U",strtotime($proxvence." -5 days"))) {
+                $proxvence = date("Y-m-",strtotime("+1 month")).$user->vence_fatura;
+            }
+            $dtini = $proxvence;
+        }
+
+        $this->diasIntervalo($dtini,$meses);
+        $cet = $this->calculaCET($valor,$prestacao_final);
+        $cetm =((1+($cet/100))**(1/12)-1)*100;
+
+        return compact('taxa_int','valor_cardholder','valor_intermediador','repasse','repasse_parcela','prestacao_final','cet','cetm','montante_iof');
+    }
+
+    public function calcular(Request $request) {
+    	$user = Auth::user();
+    	if ($user) {
+
+    		$parcelas = [];
+            $parcelaIof = [];
+            $parcelaCet = [];
+
+    		$valor_solicitado = floatval($this->fNum($request->valor_solicitado));
+    		$juros = ($user->taxa_juros && $user->taxa_juros > 0) ? $user->taxa_juros : 0.0999; //0.0499
+
+    		for($p=3;$p<=12;$p++) {
+                $financiar = $this->financiar($valor_solicitado,$juros,$p,$user->id);
+                $parcelas[$p] = $financiar['prestacao_final'];
+                $parcelaIof[$p] = $financiar['montante_iof'];
+                $parcelaCet[$p] = $financiar['cet'];
+    		}
+
+    		return response()->json(['success'=>true,'juros'=>$juros,'valor_solicitado'=>$valor_solicitado,'parcelas'=>$parcelas,'iof'=>$parcelaIof,'cet'=>$parcelaCet]);
+    	} else {
+    		return response()->json(['success'=>false]);
+    	}
+    }
+
+    public function confirmar(Request $request) {
+        $user = Auth::user();
+        if ($user) {
+            $token = md5("A".$user->id."XX".$request->parcelas."XX".$request->valor_solicitado);
+            return response()->json(['success'=>true,'token'=>$token]);
+        }
+        return response()->json(['success'=>false]);
+    }
+
+    public function registrar(Request $request) {
+        $user = Auth::user();
+        if ($user && $user->validateForPassportPasswordGrant($request->password)) {
+            DB::beginTransaction();
+
+            $valor_solicitado = floatval($this->fNum($request->valor_solicitado));
+            $juros = ($user->taxa_juros && $user->taxa_juros > 0) ? $user->taxa_juros : 0.0999; //0.0499
+            $financiar = $this->financiar($valor_solicitado,$juros,$request->parcelas,$user->id);
+            if ($financiar['prestacao_final'] != $request->valor_parcela) {
+                die('erro');
+            }
+
+            // conferir valores e token
+            if ($request->token == md5("A".$user->id."XX".$request->parcelas."XX".$request->valor_solicitado)) {
+
+                // registrar parcelamento
+                $parcela = SolicitacaoParcelamento::create([
+                    'valor_solicitado' => $request->valor_solicitado,
+                    'valor_parcela' => $request->valor_parcela,
+                    'parcelas' => $request->parcelas,
+                    'taxa_juros' => $juros,
+                    'reg_date'=>date("Y-m-d"),
+                    'id_usuario'=>$user->id,
+                    // vencimento da última parcela (nº parcelas + 1 para o próximo mês)
+                    'ultima_parcela'=>date("Y-m-".$user->vence_fatura,strtotime("+".($request->parcelas+1)." month"))
+                ]);
+
+                // atualização de saldos
+                $user->limite_utilizado = $user->limite_utilizado + $request->valor_solicitado;
+                $user->limite_disponivel = $user->limite_disponivel - $request->valor_solicitado;
+                $user->save();
+
+                // ver se fatura do mês está fechada
+                $faturaFechada = Fatura::where('fechado',1)->where('anomes',date("Ym"))->where('id_usuario',$user->id)->first();
+
+                $diff = -1;
+                if ($faturaFechada) {
+                    $diff = 0;
+                }
+
+                for ($p=1;$p<=$request->parcelas;$p++) {
+
+                    $fatura = Fatura::firstOrNew(['anomes'=>date("Ym",strtotime("+".($p+$diff)." month")),'fechado'=>0,'id_usuario'=>$user->id]);
+                    $fatura->id_usuario = $user->id;
+                    $fatura->anomes = date("Ym",strtotime("+".($p-1)." month"));
+                    $fatura->reg_date = date("Y-m-d");
+                    $fatura->vencimento = date("Y-m-".$user->vence_fatura,strtotime("+".($p+$diff)." month"));
+                    $fatura->fechamento = date("Y-m-d",strtotime($fatura->vencimento." -5 days"));
+                    $fatura->valor_total = ($fatura->valor_total) ? $fatura->valor_total : 0;
+                    $fatura->valor_total = $fatura->valor_total + $request->valor_parcela;
+                    $fatura->save();
+
+                    $parcela->parcelaFatura()->create([
+                        'numparcela'=>$p,
+                        'id_fatura'=>$fatura->id,
+                        'id_usuario'=>$user->id,
+                    ]);
+
+                }
+
+                //Notification::send($user, new Analyze($user));
+
+                DB::commit();
+
+                return response()->json(['success'=>true]);
+            }
+            return response()->json(['success'=>false]);
+        } else {
+            return response()->json(['success'=>false,'error'=>'Senha inválida']);
+        }
+    }
+
+    public function cCheckBill() {
+        // fechar faturas
+        $faturas = Fatura::where('fechamento','<=',date("Y-m-d"))->where('fechado',0)->get();
+        foreach ($faturas as $fatura) {
+            $fatura->fechado = 1;
+            $fatura->save();
+
+            $user = $fatura->usuario;
+            Notification::send($user, new ClosedInvoice($user));
+        }
+
+        $faturas = Fatura::where('fechado',1)->where('pago',0)->get();
+        foreach ($faturas as $fatura) {
+            if (Carbon::parse($fatura->vencimento)->addDays(3)->format('Y-m-d') == date("Y-m-d")) {
+                $user = $fatura->usuario;
+                Notification::send($user, new DelayedInvoice($user));
+            }
+        }
+
+        return response()->json(['success'=>true]);
+    }
+}

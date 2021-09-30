@@ -1,0 +1,1 @@
+[15-Sep-2021 08:54:44 America/Sao_Paulo] PHP Fatal error:  Allowed memory size of 268435456 bytes exhausted (tried to allocate 94357560 bytes) in /home4/desban60/api.desbankei.com.br/vendor/intervention/image/src/Intervention/Image/Gd/Decoder.php on line 121

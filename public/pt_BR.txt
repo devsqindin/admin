@@ -1,0 +1,35 @@
+
+
+{
+
+	"sProcessing": "Processando...",
+
+	"sLengthMenu": "Listar _MENU_ por Pag.",
+
+	"sZeroRecords": "Nenhum Registro.",
+
+	"sInfo": "Mostrando _START_ de _END_ de _TOTAL_ Registros",
+
+	"sInfoEmpty": "Mostrando 0 de 0 de 0 Registros",
+
+	"sInfoFiltered": "(Filtrados _MAX_  Maximo)",
+
+	"sInfoPostFix": "",
+
+	"sSearch": "Procurar",
+
+	"sUrl": "",
+
+	"oPaginate": {
+
+		"sFirst":    "Primeiro",
+
+		"sPrevious": "Anterior",
+
+		"sNext":     "Pr&oacute;ximo",
+
+		"sLast":     "&Uacute;ltimo"
+
+	}
+
+}

@@ -1,0 +1,1 @@
+"<button id='edit' class='button is-link'><span class='icon'><i class='fas fa-edit'></i></span><span> Edit</span></button>"
