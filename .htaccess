@@ -1,5 +1,5 @@
 RewriteEngine on
-RewriteCond %{HTTP_HOST} ^andromeda.qindin.com.br$ [NC,OR] 
-RewriteCond %{HTTP_HOST} ^www.andromeda.qindin.com.br/$
+RewriteCond %{HTTP_HOST} ^andromeda-prod10397524v3.qindin.com.br$ [NC,OR] 
+RewriteCond %{HTTP_HOST} ^www.andromeda-prod10397524v3.qindin.com.br/$
 RewriteCond %{REQUEST_URI} !public/
 RewriteRule (.*) /public/$1 [L]
