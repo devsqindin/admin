@@ -1,6 +1,4 @@
-RewriteEngine on
-RewriteCond %{REQUEST_FILENAME} !-f
-RewriteCond %{HTTP_HOST} ^andromeda.qindin.com.br$ [NC,OR] 
-RewriteCond %{HTTP_HOST} ^www.andromeda.qindin.com.br/$
-RewriteCond %{REQUEST_URI} !public/
-RewriteRule (.*) /public/$1 [L]
+RewriteEngine On
+RewriteCond %{HTTPS} off
+RewriteRule (.*) https://%{HTTP_HOST}%{REQUEST_URI} [R,L]
+RewriteRule ^(.*)$ public/$1 [L]
