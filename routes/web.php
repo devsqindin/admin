@@ -21,6 +21,8 @@ Route::get('/', function () {
 	echo date("d/m/Y H:i:s");
 });*/
 
+
+
 Route::prefix('admin')->name('admin.')->group(function () {
 	Route::get('/','AdminController@login')->name('login');
 	Route::get('/logout','AdminController@logout');
