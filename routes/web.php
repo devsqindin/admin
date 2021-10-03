@@ -14,7 +14,7 @@ use Illuminate\Support\Facades\Route;
 */
 
 Route::get('/', function () {
-    return redirect('/admin');
+    return redirect('/adm');
 });
 
 /*Route::get('/datetime', function () {
@@ -23,7 +23,7 @@ Route::get('/', function () {
 
 
 
-Route::prefix('admin')->name('admin.')->group(function () {
+Route::prefix('adm')->name('adm.')->group(function () {
 	Route::get('/','AdminController@login')->name('login');
 	Route::get('/logout','AdminController@logout');
 	Route::post('/login','AdminController@fazerLogin');
