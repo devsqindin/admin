@@ -27,7 +27,7 @@ Route::prefix('adm')->name('adm.')->group(function () {
 	Route::get('/','AdminController@login')->name('login');
 	Route::get('/logout','AdminController@logout');
 	Route::post('/login','AdminController@fazerLogin');
-	Route::middleware('auth:admin')->group(function(){
+	Route::middleware('auth:adm')->group(function(){
 
 		Route::get('/check_contas','AdminController@checkContas');
 		Route::get('/ler','AdminController@ler');
@@ -73,7 +73,7 @@ Route::prefix('cron')->name('cron.')->group(function () {
 	Route::get('/fatura','AdminController@cronFatura');
 });
 
-Route::middleware('auth:admin')->group(function(){ //mover
+Route::middleware('auth:adm')->group(function(){ //mover
 	Route::get('/cliente/{clienteId}/fatura/{faturaId}','AdminController@carregaFatura');
 	Route::get('/cliente/{clienteId}/fatura/{faturaId}/cobranca','AdminController@carregaCobranca');
 	Route::get('/cliente/{clienteId}/creditos','AdminController@carregaCreditos');
@@ -81,7 +81,7 @@ Route::middleware('auth:admin')->group(function(){ //mover
 });
 
 Route::prefix('api')->name('api.')->group(function () {
-	Route::middleware('auth:admin')->group(function(){
+	Route::middleware('auth:adm')->group(function(){
 		Route::get('/testt','AdminController@testt');
 		Route::get('/clientes/{total?}','AdminController@pegaClientes');
 		Route::get('/cliente/{clienteId}','AdminController@pegaCliente');
