@@ -13,7 +13,7 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
-Route::view('/', 'login');
+Route::view('/', 'admin');
 
 /*Route::get('/datetime', function () {
 	echo date("d/m/Y H:i:s");
