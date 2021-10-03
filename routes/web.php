@@ -14,14 +14,14 @@ use Illuminate\Support\Facades\Route;
 */
 
 Route::get('/', function () {
-    return redirect('admin');
+    return redirect('/admin');
 });
 
 /*Route::get('/datetime', function () {
 	echo date("d/m/Y H:i:s");
 });*/
 
-Route::prefix('admin')->group(function () {
+Route::prefix('admin')->name('admin.')->group(function () {
 	Route::get('/','AdminController@login')->name('login');
 	Route::get('/logout','AdminController@logout');
 	Route::post('/login','AdminController@fazerLogin');
