@@ -50,6 +50,7 @@ Route::get('/faq/perguntas/{parent}','AdminController@pegaPerguntas');
 Route::get('/perguntas','AdminController@perguntasApp');
 Route::get('/perguntasjson','AdminController@perguntasAppJson');
 
+Route::post('/user/startconvite','UsuarioController@userStartConvite');
 Route::post('/user/start','UsuarioController@userStart');
 Route::post('/senha/redefinir', 'UsuarioController@forgotMyPass');
 
