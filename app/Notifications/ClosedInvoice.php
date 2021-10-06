@@ -43,7 +43,7 @@ class ClosedInvoice extends Notification
     public function toMail($notifiable)
     {
         return (new MailMessage)->from('poderesponder@qindin.com.br','Qindin')
-        ->subject('[Desbankei] Sua fatura está fechada!')
+        ->subject('[Qindin] Sua fatura está fechada!')
         ->markdown('desbankei.closed_invoice',['user'=>$this->user,'fatura'=>$this->fatura])->attach('/public/'.$this->fatura->url,'fatura.pdf', ['mime' => 'application/pdf']);
     }
 

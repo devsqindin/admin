@@ -28,7 +28,7 @@ class LateBill extends Mailable
     public function build()
     {
         return $this->from('poderesponder@qindin.com.br','Qindin')
-        ->subject('[Desbankei] Antecipação de fatura')
+        ->subject('[Qindin] Antecipação de fatura')
         ->markdown('desbankei.latebill',['user'=>$this->user,'dados'=>$this->dados]);
     }
 }

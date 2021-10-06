@@ -42,7 +42,7 @@ class Analyze extends Notification
     public function toMail($notifiable)
     {
         return (new MailMessage)->from('poderesponder@qindin.com.br','Qindin')
-        ->subject('[Desbankei] Análise de Crédito')
+        ->subject('[Qindin] Análise de Crédito')
         ->markdown('desbankei.analyze',['user'=>$this->user]);
     }
 

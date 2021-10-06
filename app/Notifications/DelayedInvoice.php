@@ -43,7 +43,7 @@ class DelayedInvoice extends Notification
     public function toMail($notifiable)
     {
         return (new MailMessage)->from('poderesponder@qindin.com.br','Qindin')
-        ->subject('[Desbankei] Sua fatura está atrasada!')
+        ->subject('[Qindin] Sua fatura está atrasada!')
         ->markdown('desbankei.delayed_invoice',['user'=>$this->user,'fatura'=>$this->fatura]);
     }
 

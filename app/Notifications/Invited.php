@@ -42,7 +42,7 @@ class Invited extends Notification
     public function toMail($notifiable)
     {
         return (new MailMessage)->from('poderesponder@qindin.com.br','Qindin')
-        ->subject('[Desbankei] Aqui está o seu convite!')
+        ->subject('[Qindin] Aqui está o seu convite!')
         ->markdown('desbankei.invited',['user'=>$this->user]);
     }
 

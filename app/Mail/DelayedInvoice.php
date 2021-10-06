@@ -28,7 +28,7 @@ class DelayedInvoice extends Mailable
     public function build()
     {
         return $this->from('poderesponder@qindin.com.br','Qindin')
-        ->subject('[Desbankei] Sua fatura está atrasada!')
+        ->subject('[Qindin] Sua fatura está atrasada!')
         ->markdown('desbankei.delayed_invoice',['user'=>$this->user,'fatura'=>$this->fatura])->attach('../'.$this->fatura->url, [
             'as' => 'fatura.pdf',
             'mime' => 'application/pdf',

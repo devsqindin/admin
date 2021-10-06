@@ -43,7 +43,7 @@ class Receipt extends Notification
     public function toMail($notifiable)
     {
         return (new MailMessage)->from('poderesponder@qindin.com.br','Qindin')
-        ->subject('[Desbankei] Recebemos o seu pagamento!')
+        ->subject('[Qindin] Recebemos o seu pagamento!')
         ->markdown('desbankei.receipt',['user'=>$this->user,'fatura'=>$this->fatura]);
     }
 
