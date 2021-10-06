@@ -572,124 +572,138 @@ $(function(){
     var inflowSoma = 0;
     var outflowSoma = 0;
     let inflowOutflowCalcByMonth = {}; 
-
-    for(var x = transactionsJson.length -1; x >= 0; x--) {
-
-      let valueDate = "01/" + transactionsJson[x].value_date.substring(5,7) + "/" + transactionsJson[x].value_date.substring(0,4) // e.g.: 01/06/2020 (01/mm/aaaa)
-
-      if(x === transactionsJson.length -1) {
-
-        let contador = 0;
-        let calcDozeMesesArray = valueDate;
-        let mesSubsequente = parseInt(transactionsJson[x].value_date.substring(5,7), 10);
-        let anoSubSequente = parseInt(transactionsJson[x].value_date.substring(0,4), 10);
-
-        for (var w = 1; w < 12; w++) {
-
-          inflowOutflowCalcByMonth[calcDozeMesesArray] = [0, 0];
-          mesSubsequente = mesSubsequente + 1;
-          
-          if(mesSubsequente > 12) {
-
-            mesSubsequente = 1;
-            anoSubSequente = anoSubSequente + 1;
-          }
-
-          if (mesSubsequente.toString().length < 2) {
-
-            calcDozeMesesArray = "01/" + "0" + mesSubsequente.toString() + "/" + anoSubSequente;
-          } else {
-
-            calcDozeMesesArray = "01/" + mesSubsequente.toString() + "/" + anoSubSequente;
-          }   
-        }
-
-        console.log("inflowOutflowCalcByMonth CALCULADO 12 MESES: ");
-        console.log(inflowOutflowCalcByMonth);
-      }
-
-      if(transactionsJson[x].type === "OUTFLOW") {
-
-        if(inflowOutflowCalcByMonth.hasOwnProperty(valueDate)) {
-
-          /* REGRA OUTFLOW DE CONSIDERAR SÓ LANÇAMENTOS PARA CONTA CORRENTE
-          
-            PARA CLIENTE NÚMERO 1 - 2368 -> Deu certinho, pouca diferença com oq tinha na planilha
-            PARA CLIENTE NÚMERO 2 - 124 -> Deu grande diferença de valores entre planilha e programa, ao tirar essa regra os valores ficam identicos entre as fontes.
-            PARA CLIENTE NÚMERO 3 - 639 -> Deu certinho
-            PARA CLIENTE NÚMERO 4 - 1066 -> Deu grande diferença, pq o belvo dele a ordem dos meses veio bagunçado (primeiro mes é 7/2020) e no extrato veio 10/2020.
-
-            Para resolver isso, implementar a seguinte melhoria ao construir o objeto inflowOutflowCalcByMonth:
-            myObjs = [{"date": "01/01/2020", "inflow": 1, "ouflow": 2}, {"date": "01/02/2021", "inflow": 1, "ouflow": 2}, {"date": "01/03/2019", "inflow": 1, "ouflow": 2}, {"date": "01/05/2019", "inflow": 1, "ouflow": 2}, {"date": "01/06/2020", "inflow": 1, "ouflow": 2}]
-
-            Dessa maneira podemos ordenar por data:
-
-            myObjs.sort(function(a, b) {
-              var keyA = new Date(a.date),
-                keyB = new Date(b.date);
-              // Compare the 2 dates
-              if (keyA < keyB) return -1;
-              if (keyA > keyB) return 1;
-              return 0;
-            });
-
-            console.log(myObjs);
-          */
-        
-          //if(transactionsJson[x].account.type == "SALDO DA CONTA-CORRENTE: 1") {
-            
-              inflowOutflowCalcByMonth[valueDate][1] = inflowOutflowCalcByMonth[valueDate][1] + transactionsJson[x].amount;
-          //}
-        } else {
-
-          inflowOutflowCalcByMonth[valueDate] = [0, transactionsJson[x].amount]
-        }
-
-      } else if(transactionsJson[x].type === "INFLOW") {
-      
-        if(inflowOutflowCalcByMonth.hasOwnProperty(valueDate)) {
-
-          // Somando Créditos e Debitos apenas do tipo "Lançamentos de Conta Corrente"
-          if(transactionsJson[x].account.category != "CREDIT_CARD") {
-
-            inflowOutflowCalcByMonth[valueDate][0] = inflowOutflowCalcByMonth[valueDate][0] + transactionsJson[x].amount;
-          }
-        } else {
-
-          inflowOutflowCalcByMonth[valueDate] = [transactionsJson[x].amount, 0]
-        } 
-      }
-    }
-
+    
     var tabelaBelvoAutStyle = "<style> table, th, td { border:1px solid black; text-align:center;}</style>";
     var tabelaBelvoAutTitulo = "<table><tr><th>Rótulos de Linha</th><th>Soma de Creditos</th><th>Soma de Débitos</th></tr>";
     var tabelaBelvoAutLinha = "";
+    
+    if(transactionsJson.length > 0) {
 
-    for (var prop in inflowOutflowCalcByMonth) {
+      console.log("Objeto JSON com contéudo para ser processado");
+      for(var x = transactionsJson.length -1; x >= 0; x--) {
 
-      inflowOutflowCalcByMonth[prop][0] = $.replaceNumberWithCommas(inflowOutflowCalcByMonth[prop][0]);
-      inflowOutflowCalcByMonth[prop][1] = $.replaceNumberWithCommas(inflowOutflowCalcByMonth[prop][1]);
-    }
+        let valueDate = "01/" + transactionsJson[x].value_date.substring(5,7) + "/" + transactionsJson[x].value_date.substring(0,4) // e.g.: 01/06/2020 (01/mm/aaaa)
 
-    for (var prop in inflowOutflowCalcByMonth) {
+        if(x === transactionsJson.length -1) {
+
+          let contador = 0;
+          let calcDozeMesesArray = valueDate;
+          let mesSubsequente = parseInt(transactionsJson[x].value_date.substring(5,7), 10);
+          let anoSubSequente = parseInt(transactionsJson[x].value_date.substring(0,4), 10);
+
+          for (var w = 1; w < 12; w++) {
+
+            inflowOutflowCalcByMonth[calcDozeMesesArray] = [0, 0];
+            mesSubsequente = mesSubsequente + 1;
+
+            if(mesSubsequente > 12) {
+
+              mesSubsequente = 1;
+              anoSubSequente = anoSubSequente + 1;
+            }
+
+            if (mesSubsequente.toString().length < 2) {
+
+              calcDozeMesesArray = "01/" + "0" + mesSubsequente.toString() + "/" + anoSubSequente;
+            } else {
+
+              calcDozeMesesArray = "01/" + mesSubsequente.toString() + "/" + anoSubSequente;
+            }   
+          }
+
+          console.log("inflowOutflowCalcByMonth CALCULADO 12 MESES: ");
+          console.log(inflowOutflowCalcByMonth);
+        }
+
+        if(transactionsJson[x].type === "OUTFLOW") {
+
+          if(inflowOutflowCalcByMonth.hasOwnProperty(valueDate)) {
+
+            /* REGRA OUTFLOW DE CONSIDERAR SÓ LANÇAMENTOS PARA CONTA CORRENTE
+
+              PARA CLIENTE NÚMERO 1 - 2368 -> Deu certinho, pouca diferença com oq tinha na planilha
+              PARA CLIENTE NÚMERO 2 - 124 -> Deu grande diferença de valores entre planilha e programa, ao tirar essa regra os valores ficam identicos entre as fontes.
+              PARA CLIENTE NÚMERO 3 - 639 -> Deu certinho
+              PARA CLIENTE NÚMERO 4 - 1066 -> Deu grande diferença, pq o belvo dele a ordem dos meses veio bagunçado (primeiro mes é 7/2020) e no extrato veio 10/2020.
+
+              Para resolver isso, implementar a seguinte melhoria ao construir o objeto inflowOutflowCalcByMonth:
+              myObjs = [{"date": "01/01/2020", "inflow": 1, "ouflow": 2}, {"date": "01/02/2021", "inflow": 1, "ouflow": 2}, {"date": "01/03/2019", "inflow": 1, "ouflow": 2}, {"date": "01/05/2019", "inflow": 1, "ouflow": 2}, {"date": "01/06/2020", "inflow": 1, "ouflow": 2}]
+
+              Dessa maneira podemos ordenar por data:
+
+              myObjs.sort(function(a, b) {
+                var keyA = new Date(a.date),
+                  keyB = new Date(b.date);
+                // Compare the 2 dates
+                if (keyA < keyB) return -1;
+                if (keyA > keyB) return 1;
+                return 0;
+              });
+
+              console.log(myObjs);
+            */
+
+            //if(transactionsJson[x].account.type == "SALDO DA CONTA-CORRENTE: 1") {
+
+                inflowOutflowCalcByMonth[valueDate][1] = inflowOutflowCalcByMonth[valueDate][1] + transactionsJson[x].amount;
+            //}
+          } else {
+
+            inflowOutflowCalcByMonth[valueDate] = [0, transactionsJson[x].amount]
+          }
+
+        } else if(transactionsJson[x].type === "INFLOW") {
+
+          if(inflowOutflowCalcByMonth.hasOwnProperty(valueDate)) {
+
+            // Somando Créditos e Debitos apenas do tipo "Lançamentos de Conta Corrente"
+            if(transactionsJson[x].account.category != "CREDIT_CARD") {
+
+              inflowOutflowCalcByMonth[valueDate][0] = inflowOutflowCalcByMonth[valueDate][0] + transactionsJson[x].amount;
+            }
+          } else {
+
+            inflowOutflowCalcByMonth[valueDate] = [transactionsJson[x].amount, 0]
+          } 
+        }
+      } 
+
+      for (var prop in inflowOutflowCalcByMonth) {
+
+        inflowOutflowCalcByMonth[prop][0] = $.replaceNumberWithCommas(inflowOutflowCalcByMonth[prop][0]);
+        inflowOutflowCalcByMonth[prop][1] = $.replaceNumberWithCommas(inflowOutflowCalcByMonth[prop][1]);
+      }
+      
+      for (var prop in inflowOutflowCalcByMonth) {
       // ctrl+shift+k (para abrir o console no mozilla firefox)
 
-      tabelaBelvoAutLinha += "<tr><td>" + prop + "</td><td>" + inflowOutflowCalcByMonth[prop][0] + "</td><td>" + inflowOutflowCalcByMonth[prop][1] + "</td></tr>";
+        tabelaBelvoAutLinha += "<tr><td>" + prop + "</td><td>" + inflowOutflowCalcByMonth[prop][0] + "</td><td>" + inflowOutflowCalcByMonth[prop][1] + "</td></tr>";
+      }
+      tabelaBelvoAutLinha += "</table>";
+
+      //var tabelaBelvoAutLinha = "<tr><td>TOTAL</td><td>" + inflowSoma + "</td><td>" + outflowSoma + "</td></tr></table>";
+      var tabelaBelvoAut = tabelaBelvoAutStyle + tabelaBelvoAutTitulo + tabelaBelvoAutLinha;
+
+      $.abreJsonBelvoAutomatizado(tabelaBelvoAut);
+
+      // html renderizado funcionando, agora implementar os passos da logica descrita na linha 884
+      // preciso dar o round jquery tbm pra valores monetarios R$
+
+      /**
+       obj[jan] = 10
+      obj[fev] = 20
+      */
+    } else {
+        console.log("Objeto JSON sem conteúdo para ser processado");
+      
+        let msgSemDadosProcessar = "<strong>Não foram encontrados dados bancários para serem processados.</strong>";
+        tabelaBelvoAutLinha += "<tr>" + msgSemDadosProcessar +"</tr>";
+        tabelaBelvoAutLinha += "</table>";
+        
+        var tabelaBelvoAut = tabelaBelvoAutStyle + tabelaBelvoAutLinha;
+
+        $.abreJsonBelvoAutomatizado(tabelaBelvoAut);
     }
-    tabelaBelvoAutLinha += "</table>";
-
-    //var tabelaBelvoAutLinha = "<tr><td>TOTAL</td><td>" + inflowSoma + "</td><td>" + outflowSoma + "</td></tr></table>";
-    var tabelaBelvoAut = tabelaBelvoAutStyle + tabelaBelvoAutTitulo + tabelaBelvoAutLinha;
-
-    $.abreJsonBelvoAutomatizado(tabelaBelvoAut);
-
-    // html renderizado funcionando, agora implementar os passos da logica descrita na linha 884
-    // preciso dar o round jquery tbm pra valores monetarios R$
-
-    /**
-     obj[jan] = 10
-    obj[fev] = 20
-    */
   }
 
   $.abreJsonBelvoAutomatizado = function(tabelaBelvoAut) {
