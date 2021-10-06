@@ -41,7 +41,7 @@ class Approved extends Notification
      */
     public function toMail($notifiable)
     {
-        return (new MailMessage)->from('poderesponder@desbankei.com.br','Desbankei')
+        return (new MailMessage)->from('poderesponder@qindin.com.br','Qindin')
         ->subject('[Desbankei] Seu crédito foi aprovado!')
         ->markdown('desbankei.approved',['user'=>$this->user]);
     }

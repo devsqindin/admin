@@ -25,7 +25,7 @@ class ResetEmail extends Mailable
 
     public function build()
     {
-        return $this->from('poderesponder@desbankei.com.br','Desbankei')
+        return $this->from('poderesponder@qindin.com.br','Qindin')
         ->subject('[Desbankei] Alteração de e-mail da conta')
         ->markdown('desbankei.new_email',['user'=>$this->user]);
     }

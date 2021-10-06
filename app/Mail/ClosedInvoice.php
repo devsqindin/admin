@@ -27,7 +27,7 @@ class ClosedInvoice extends Mailable
 
     public function build()
     {
-        return $this->from('poderesponder@desbankei.com.br','Desbankei')
+        return $this->from('poderesponder@qindin.com.br','Qindin')
         ->subject('[Desbankei] Sua fatura está fechada!')
         ->markdown('desbankei.closed_invoice',['user'=>$this->user,'fatura'=>$this->fatura])->attach('../'.$this->fatura->url, [
             'as' => 'fatura.pdf',
