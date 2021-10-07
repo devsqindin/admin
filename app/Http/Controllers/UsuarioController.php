@@ -654,19 +654,20 @@ class UsuarioController extends Controller
             $request->renda_comprovada = $this->fNum($request->renda_comprovada);
 
             // validar alteração de renda ou vencimento fatura
-            if (isset($logged->renda_comprovada)  && $logged->renda_comprovada > 0) { 
+            if (isset($logged->renda_comprovada) && $logged->renda_comprovada > 0) { 
                 if (isset($request->renda_comprovada) && $logged->renda_comprovada != $request->renda_comprovada) {
                     if (date("U") < date("U",strtotime($logged->limite_renda." +90 days"))) {
                         return response()->json(['success'=>false,'message'=>'Sua renda só pode ser alterada 90 dias depois do cadastro ou última alteração.']);
                     }
                 }
-            }
-            if (isset($request->vence_fatura) && $logged->vence_fatura != $request->vence_fatura) {
-                if (date("U") < date("U",strtotime($logged->limite_vence." +90 days"))) {
-                    return response()->json(['success'=>false,'message'=>'O vencimento da fatura só pode ser alterada 90 dias depois do cadastro ou última alteração.']);
+
+                if (isset($request->vence_fatura) && $logged->vence_fatura != $request->vence_fatura) {
+                    if (date("U") < date("U",strtotime($logged->limite_vence." +90 days"))) {
+                        return response()->json(['success'=>false,'message'=>'O vencimento da fatura só pode ser alterada 90 dias depois do cadastro ou última alteração.']);
+                    }
                 }
             }
-
+            
             $dados = [
                 'profissao'=>$request->profissao,
                 'ocupacao'=>$request->ocupacao,
