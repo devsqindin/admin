@@ -401,7 +401,7 @@ class AdminController extends Controller
         $response = '';
         $response = curl_exec($curlHandler);
         if (curl_errno($curlHandler)) {
-            $response .= curl_error($ch);
+            $response .= curl_error($curlHandler);
         }
         curl_close($curlHandler);
         $aresponse = json_decode($response,1);
