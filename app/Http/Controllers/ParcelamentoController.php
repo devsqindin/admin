@@ -208,6 +208,9 @@ class ParcelamentoController extends Controller
         // consulta api fiducia - bancarização
         $consulta = $this->apiSimularFiducia($valor,$valor_tac,$dtvencimento,$meses,$taxa_juros);
 
+        $cet = null;
+        $iof = null;
+        $parcela = null;
 
         if ($consulta) {
             $cet = $consulta['resposta']['CET_FI'];
