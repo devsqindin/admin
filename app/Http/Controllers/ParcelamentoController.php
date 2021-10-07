@@ -274,6 +274,10 @@ class ParcelamentoController extends Controller
                 $dtVencimentoPrimeira = $financiar['dtvencimento'];
     		}
 
+            if($parcelas[3] == null) {
+                return response()->json(['success'=>false,'message'=>'A API Fidúcia está apresentando problemas para retornar o cálculo.']);
+            }
+
     		return response()->json(['success'=>true,'dtvencimento'=>date("d/m/Y",strtotime($dtVencimentoPrimeira)),'juros'=>$juros,'valor_solicitado'=>$valor_solicitado,'parcelas'=>$parcelas,'iof'=>$parcelaIof,'cet'=>$parcelaCet]);
     	} else {
     		return response()->json(['success'=>false]);
