@@ -279,6 +279,7 @@ class AdminController extends Controller
             CURLOPT_HTTPHEADER => [
                 'Content-Type: application/json',
                 'Host: '.env('BELVO_URL'),
+                'Authorization: Basic ZjM1YmI3NjItYzdjOC00ZDVkLTgwNmEtZDUxZjA5OGFjY2EyOmh6UnRLTDU0QUBldnoyMmhFY2FjOHEjZzZ5UWRZYV9Mamc4WkxmeDlWbnFFS25neU41dHZhU0YqSTRDNHJITGQ='     
             ],
             /**
              * Specify request content
