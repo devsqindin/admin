@@ -596,7 +596,7 @@ class AdminController extends Controller
                         $msg = ' - '.$regCredito['message'];
                     }
                     return response()->json(['success'=>false,'message'=>'Erro ao importar crédito - Processo inicial. Retorno da API: '. $msg,
-                'payload'=>$credito->valor_solicitado,$credito->valor_tac,$credito->primeira_parcela,$credito->parcelas,$credito->taxa_juros,$usuario,$credito->id]);
+                'payload'=>$credito->valor_solicitado,$credito->valor_tac,$credito->primeira_parcela,$credito->parcelas,$credito->taxa_juros,$credito->id]);
                 }
             }
         }
