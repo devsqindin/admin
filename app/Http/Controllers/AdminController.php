@@ -595,7 +595,7 @@ class AdminController extends Controller
                     if (isset($regCredito['message'])) {
                         $msg = ' - '.$regCredito['message'];
                     }
-                    return response()->json(['success'=>false,'message'=>'Erro ao importar crédito - Processo inicial'.$msg]);
+                    return response()->json(['success'=>false,'message'=>'Erro ao importar crédito - Processo inicial. Retorno da API: '. $msg]);
                 }
             }
         }
