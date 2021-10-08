@@ -312,133 +312,8 @@ class AdminController extends Controller
         
         return response()->json(['success'=>true,'data'=>base64_encode($response)]);
     }
-    
-    public function apiRegistroCredito($valor,$valor_tac,$vencimento,$meses,$juros,$usuario,$codSolicitacao) {
-        $curlHandler = curl_init();
-        $userName = env('FIDUCIA_USER');
-        $password = env('FIDUCIA_PASS');
-
-        $postfield = '{
-            "numero_ccb": "40076'.$codSolicitacao.'",
-            "modalidade": "FI",
-            "valor_liberado": '.number_format($valor,2,'.','').',
-            "taxa_juros": '.($juros*100).',
-            "parcelas": '.$meses.',
-            "primeiro_vencimento": "'.$vencimento.'",
-            "periodicidade": "M",
-            "TAC": '.$valor_tac.',
-            "cliente": {
-                "nome_razaosocial": "'.$usuario->nome_completo.'",
-                "tipo_pessoa": "PF",
-                "cpfcnpj": "'.$this->somenteNumeros($usuario->cpf).'",
-                "rg": "'.$this->somenteNumeros($usuario->rg).'",
-                "orgao_rg": "'.$usuario->rg_orgao.'",
-                "UF_rg": "'.mb_strtoupper($usuario->rg_uf).'",
-                "emissao_rg": "'.$this->fData($usuario->rg_dtemissao).'",
-                "inscricao_estadual": null,
-                "nascimento": "'.$this->fData($usuario->data_nascimento).'",
-                "sexo": "'.$usuario->sexo.'",
-                "email": "'.$usuario->email.'",
-                "celular": "'.$usuario->whatsapp.'",
-                "nacionalidade": "'.$usuario->nacionalidade.'",
-                "naturalidade": "'.$usuario->habita_cidade.'",
-                "endereco": {
-                    "logradouro": "'.$usuario->endereco.'",
-                    "numero": "'.$usuario->numero.'",
-                    "complemento": "'.$usuario->complemento.'",
-                    "bairro": "'.$usuario->bairro.'",
-                    "cidade": "'.$usuario->cidade.'",
-                    "UF": "'.$usuario->estado.'",
-                    "CEP": "'.$usuario->cep.'"
-                },
-                "dados_bancarios": {
-                    "agencia": "'.$usuario->agencia.'",
-                    "dig_agencia": null,
-                    "cod_banco": "'.$usuario->banco.'",
-                    "conta": "'.$usuario->numero_conta.'",
-                    "dig_conta": "'.$usuario->dv_conta.'",
-                    "operacao": null,
-                    "cpfcnpj_titular": "'.$this->somenteNumeros($usuario->cpf).'",
-                    "tipo": "CC"
-                }
-            }
-        }';
-
-        // $usuario->nacionalidade != NULL && $usuario->habita_cidade != NULL &&
-        if ($codSolicitacao != NULL && $valor != NULL && $juros != NULL && $meses != NULL && $vencimento != NULL && $valor_tac != NULL && $usuario->nome_completo != NULL && $usuario->cpf != NULL && $usuario->rg != NULL && $usuario->rg_orgao != NULL && $usuario->rg_uf != NULL && $usuario->rg_dtemissao != NULL && $usuario->data_nascimento != NULL && $usuario->sexo != NULL && $usuario->email != NULL && $usuario->whatsapp != NULL && $usuario->endereco != NULL && $usuario->numero != NULL && $usuario->bairro != NULL && $usuario->cidade != NULL && $usuario->estado != NULL && $usuario->cep != NULL && $usuario->agencia != NULL && $usuario->banco != NULL && $usuario->numero_conta != NULL && $usuario->cpf != NULL) {
-        } else {
-            $usuario->historicos()->create([
-                'id_acao_historico'=>10,
-                'descricao'=>$postfield,
-                'valor'=>null,
-                'datahora'=>date("Y-m-d H:i:s"),
-            ]);
-            return ['success'=>false,'message'=>'Dados Incompletos'];
-        }
-
-        curl_setopt_array($curlHandler, [
-            CURLOPT_URL => env('FIDUCIA_URL_IMPORTAR','https://api.bancarizacao.fiducia.digital/api/v1/bancarizacao/importar'),
-            CURLOPT_RETURNTRANSFER => true,
-            CURLOPT_HTTPAUTH => CURLAUTH_BASIC,
-            CURLOPT_USERPWD => $userName . ':' . $password,
-            /**
-             * Specify POST method
-             */
-            CURLOPT_POST => true,
-            /**
-             * Specify request headers
-             */
-            CURLOPT_HTTPHEADER => [
-                'user: '.env('FIDUCIA_HEADER')
-            ],
-            /**
-             * Specify request content
-             */
-            CURLOPT_POSTFIELDS => $postfield,
-            CURLOPT_FAILONERROR=>true,
-        ]);
- 
-        $response = '';
-        $response = curl_exec($curlHandler);
-        if (curl_errno($curlHandler)) {
-            $response .= curl_error($curlHandler);
-            $http_code = curl_getinfo($curlHandler, CURLINFO_HTTP_CODE);
-            $header_size = curl_getinfo($curlHandler, CURLINFO_HEADER_SIZE);
-            $header = substr($response, 0, $header_size);
-            $body = substr($response, $header_size);
-        }
-        curl_close($curlHandler);
-        $aresponse = json_decode($response,1);
-
-        $usuario->historicos()->create([
-            'id_acao_historico'=>10,
-            'descricao'=>$postfield,
-            'valor'=>$response,
-            'datahora'=>date("Y-m-d H:i:s"),
-        ]);
-
-        if ($aresponse['status']=='sucesso') {
-            // atualizar parcela se necessário
-            $sol = SolicitacaoParcelamento::find($codSolicitacao);
-            if ($sol->valor_parcela != $aresponse['resposta']['valores']['valor_parcela']) {
-                $sol->valor_parcela = $aresponse['resposta']['valores']['valor_parcela'];
-                $sol->save();
-            }
-            $parcelas = $sol->parcelaFatura()->get();
-            if ($parcelas && !env('FIDUCIA_HOMOLOG')) {
-                foreach($parcelas as $parcela) {
-                    $this->recalculaFatura($parcela->id_fatura);
-                }
-            }
-
-            return ['success'=>true,'operacao'=>$aresponse['resposta']['operacao']['operacao']];
-        } else {
-            return ['success'=>false,'message'=>'Retorno: '.$response, ' HTTP_CODE: ' . $http_code, ' header: ' . $header .
-        ' body: ' . $body];
-        }
-    }
-
-    public function apiDocumentosFiducia($usuario, $operacaoId, $creditoId) {
+  
+  public function apiDocumentosFiducia($usuario, $operacaoId, $creditoId) {
         $docTotal = $usuario->documentos()->where(function($qq) use ($creditoId) {
             $qq->whereDoesntHave('documento_fiducia', function($q) use ($creditoId) {
                 $q->where('id_solicitacao_parcelamento',$creditoId);
@@ -511,9 +386,11 @@ class AdminController extends Controller
 
                 curl_setopt_array($curlHandler, [
                     CURLOPT_URL => env('FIDUCIA_URL_DOCUMENTOS','https://api.bancarizacao.fiducia.digital/api/v1/bancarizacao/documentos'),
+                    //CURLOPT_URL => 'https://2fe2-2804-14d-90a8-83d3-f9ec-e475-233c-7acd.ngrok.io/bankinghardwall/api/v1/bancarizacao/documentos',
+                  
                     CURLOPT_RETURNTRANSFER => true,
                     CURLOPT_HTTPAUTH => CURLAUTH_BASIC,
-                    CURLOPT_USERPWD => $userName . ':' . $password,
+                    //CURLOPT_USERPWD => $userName . ':' . $password, -> base64 para o header basic token
                     /**
                      * Specify POST method
                      */
@@ -522,7 +399,9 @@ class AdminController extends Controller
                      * Specify request headers
                      */
                     CURLOPT_HTTPHEADER => [
-                        'user: '.env('FIDUCIA_HEADER')
+                        'Authorization: Basic UUlORElOOnRBclN4cThV',
+                        //'User: '.env('FIDUCIA_HEADER')
+                        'User: 40076375000150'
                     ],
                     /**
                      * Specify request content
@@ -555,6 +434,138 @@ class AdminController extends Controller
         }
         return ['success'=>false,'message'=>$response];
     }
+    
+    public function apiRegistroCredito($valor,$valor_tac,$vencimento,$meses,$juros,$usuario,$codSolicitacao) {
+        $curlHandler = curl_init();
+        $userName = env('FIDUCIA_USER');
+        $password = env('FIDUCIA_PASS');
+
+        $postfield = '{
+            "numero_ccb": "40076'.$codSolicitacao.'",
+            "modalidade": "FI",
+            "valor_liberado": '.number_format($valor,2,'.','').',
+            "taxa_juros": '.($juros*100).',
+            "parcelas": '.$meses.',
+            "primeiro_vencimento": "'.$vencimento.'",
+            "periodicidade": "M",
+            "TAC": '.$valor_tac.',
+            "cliente": {
+                "nome_razaosocial": "'.$usuario->nome_completo.'",
+                "tipo_pessoa": "PF",
+                "cpfcnpj": "'.$this->somenteNumeros($usuario->cpf).'",
+                "rg": "'.$this->somenteNumeros($usuario->rg).'",
+                "orgao_rg": "'.$usuario->rg_orgao.'",
+                "UF_rg": "'.mb_strtoupper($usuario->rg_uf).'",
+                "emissao_rg": "'.$this->fData($usuario->rg_dtemissao).'",
+                "inscricao_estadual": null,
+                "nascimento": "'.$this->fData($usuario->data_nascimento).'",
+                "sexo": "'.$usuario->sexo.'",
+                "email": "'.$usuario->email.'",
+                "celular": "'.$usuario->whatsapp.'",
+                "nacionalidade": "'.$usuario->nacionalidade.'",
+                "naturalidade": "'.$usuario->habita_cidade.'",
+                "endereco": {
+                    "logradouro": "'.$usuario->endereco.'",
+                    "numero": "'.$usuario->numero.'",
+                    "complemento": "'.$usuario->complemento.'",
+                    "bairro": "'.$usuario->bairro.'",
+                    "cidade": "'.$usuario->cidade.'",
+                    "UF": "'.$usuario->estado.'",
+                    "CEP": "'.$usuario->cep.'"
+                },
+                "dados_bancarios": {
+                    "agencia": "'.$usuario->agencia.'",
+                    "dig_agencia": null,
+                    "cod_banco": "'.$usuario->banco.'",
+                    "conta": "'.$usuario->numero_conta.'",
+                    "dig_conta": "'.$usuario->dv_conta.'",
+                    "operacao": null,
+                    "cpfcnpj_titular": "'.$this->somenteNumeros($usuario->cpf).'",
+                    "tipo": "CC"
+                }
+            }
+        }';
+
+        // $usuario->nacionalidade != NULL && $usuario->habita_cidade != NULL &&
+        if ($codSolicitacao != NULL && $valor != NULL && $juros != NULL && $meses != NULL && $vencimento != NULL && $valor_tac != NULL && $usuario->nome_completo != NULL && $usuario->cpf != NULL && $usuario->rg != NULL && $usuario->rg_orgao != NULL && $usuario->rg_uf != NULL && $usuario->rg_dtemissao != NULL && $usuario->data_nascimento != NULL && $usuario->sexo != NULL && $usuario->email != NULL && $usuario->whatsapp != NULL && $usuario->endereco != NULL && $usuario->numero != NULL && $usuario->bairro != NULL && $usuario->cidade != NULL && $usuario->estado != NULL && $usuario->cep != NULL && $usuario->agencia != NULL && $usuario->banco != NULL && $usuario->numero_conta != NULL && $usuario->cpf != NULL) {
+        } else {
+            $usuario->historicos()->create([
+                'id_acao_historico'=>10,
+                'descricao'=>$postfield,
+                'valor'=>null,
+                'datahora'=>date("Y-m-d H:i:s"),
+            ]);
+            return ['success'=>false,'message'=>'Dados Incompletos'];
+        }
+
+        curl_setopt_array($curlHandler, [
+            CURLOPT_URL => env('FIDUCIA_URL_IMPORTAR','https://api.bancarizacao.fiducia.digital/api/v1/bancarizacao/importar'),
+            //CURLOPT_URL => 'https://2fe2-2804-14d-90a8-83d3-f9ec-e475-233c-7acd.ngrok.io/bankinghardwall/api/v1/bancarizacao/importar',
+          
+            CURLOPT_RETURNTRANSFER => true,
+            CURLOPT_HTTPAUTH => CURLAUTH_BASIC,
+            //CURLOPT_USERPWD => $userName . ':' . $password,
+            
+            //CURLOPT_USERPWD => 'QINDIN' . ':' . 'tArSxq8U',
+            /**
+             * Specify POST method
+             */
+            CURLOPT_POST => true,
+            /**
+             * Specify request headers
+             */
+            CURLOPT_HTTPHEADER => [
+                'Authorization: Basic UUlORElOOnRBclN4cThV',
+                //'User: '.env('FIDUCIA_HEADER')
+                'User: 40076375000150'
+            ],
+            /**
+             * Specify request content
+             */
+            CURLOPT_POSTFIELDS => $postfield,
+            CURLOPT_FAILONERROR=>true,
+        ]);
+ 
+        $response = '';
+        $response = curl_exec($curlHandler);
+        if (curl_errno($curlHandler)) {
+            $response .= curl_error($curlHandler);
+            $http_code = curl_getinfo($curlHandler, CURLINFO_HTTP_CODE);
+            $header_size = curl_getinfo($curlHandler, CURLINFO_HEADER_SIZE);
+            $header = substr($response, 0, $header_size);
+            $body = substr($response, $header_size);
+        }
+        curl_close($curlHandler);
+        $aresponse = json_decode($response,1);
+
+        $usuario->historicos()->create([
+            'id_acao_historico'=>10,
+            'descricao'=>$postfield,
+            'valor'=>$response,
+            'datahora'=>date("Y-m-d H:i:s"),
+        ]);
+
+        if ($aresponse['status']=='sucesso') {
+            // atualizar parcela se necessário
+            $sol = SolicitacaoParcelamento::find($codSolicitacao);
+            if ($sol->valor_parcela != $aresponse['resposta']['valores']['valor_parcela']) {
+                $sol->valor_parcela = $aresponse['resposta']['valores']['valor_parcela'];
+                $sol->save();
+            }
+            $parcelas = $sol->parcelaFatura()->get();
+            if ($parcelas && !env('FIDUCIA_HOMOLOG')) {
+                foreach($parcelas as $parcela) {
+                    $this->recalculaFatura($parcela->id_fatura);
+                }
+            }
+
+            return ['success'=>true,'operacao'=>$aresponse['resposta']['operacao']['operacao']];
+        } else {
+            return ['success'=>false,'message'=>'Retorno: '. $response . ' HTTP_CODE: ' . $http_code . ' header: ' . $header .
+        ' body: ' . $body . ' user: ' . $userName . ' pwd: ' . $password];
+        }
+    }
+
 
     public function importaCredito(Request $request) {
         $usuario = Usuario::find($request->id_cliente);
