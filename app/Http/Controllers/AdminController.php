@@ -265,10 +265,11 @@ class AdminController extends Controller
         $curlHandler = curl_init();
 
         curl_setopt_array($curlHandler, [
-            CURLOPT_URL => "https://".env('BELVO_URL')."/api/".$type."/",
+            //CURLOPT_URL => "https://".env('BELVO_URL')."/api/".$type."/",
+            CURLOPT_URL => "https://". "api.belvo.com" ."/api/".$type."/",
             CURLOPT_RETURNTRANSFER => true,
             CURLOPT_HTTPAUTH => CURLAUTH_BASIC,
-            CURLOPT_USERPWD => $userName . ':' . $password,
+            //CURLOPT_USERPWD => $userName . ':' . $password,
             /**
              * Specify POST method
              */
@@ -278,7 +279,8 @@ class AdminController extends Controller
              */
             CURLOPT_HTTPHEADER => [
                 'Content-Type: application/json',
-                'Host: '.env('BELVO_URL'),
+                //'Host: '.env('BELVO_URL'),
+                'Host: '. 'api.belvo.com',
                 'Authorization: Basic ZjM1YmI3NjItYzdjOC00ZDVkLTgwNmEtZDUxZjA5OGFjY2EyOmh6UnRLTDU0QUBldnoyMmhFY2FjOHEjZzZ5UWRZYV9Mamc4WkxmeDlWbnFFS25neU41dHZhU0YqSTRDNHJITGQ='     
             ],
             /**
