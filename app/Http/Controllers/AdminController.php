@@ -402,6 +402,10 @@ class AdminController extends Controller
         $response = curl_exec($curlHandler);
         if (curl_errno($curlHandler)) {
             $response .= curl_error($curlHandler);
+            $http_code = curl_getinfo($curlHandler, CURLINFO_HTTP_CODE);
+            $header_size = curl_getinfo($curlHandler, CURLINFO_HEADER_SIZE);
+            $header = substr($response, 0, $header_size);
+            $body = substr($response, $header_size);
         }
         curl_close($curlHandler);
         $aresponse = json_decode($response,1);
@@ -429,7 +433,8 @@ class AdminController extends Controller
 
             return ['success'=>true,'operacao'=>$aresponse['resposta']['operacao']['operacao']];
         } else {
-            return ['success'=>false,'message'=>'Retorno: '.$response];
+            return ['success'=>false,'message'=>'Retorno: '.$response, ' HTTP_CODE: ' . $http_code, ' header: ' . $header .
+        ' body: ' . $body];
         }
     }
 
