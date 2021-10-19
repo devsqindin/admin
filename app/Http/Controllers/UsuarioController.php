@@ -311,13 +311,11 @@ class UsuarioController extends Controller
 
     public function userStartConvite(Request $request) {
 
-        Log::debug("POST: QINDIN-API/user/startconvite");
-        Log::debug('Usuário tentando fazer o cadastro: ', ['email' => $request->email]);
-
-
+        Log::debug("POST: QINDIN-API/user/startconvite para: EMAIL: " . $request->email);
+    
         if (!isset($request->termos) && $request->termos != 'true') {
 
-            Log::debug('Usuário não aceitou os termos: ', ['email' => $request->email]);
+            Log::debug('Não aceitou os termos. Usuário: ', ['email' => $request->email]);
             return response()->json(['success'=>false,'message'=>'É necessário aceitar o Termo de Uso e a Política de Privacidade para criar seu cadastro no Desbankei']);
         }
 
@@ -325,7 +323,7 @@ class UsuarioController extends Controller
 
         if (Usuario::get()->where('cpf',$request->cpf)->first()) {
 
-            Log::debug('Usuário já tem CPF cadastrado no sistema: ', ['email' => $request->email]);
+            Log::debug('Já tem CPF cadastrado no sistema. Usuário: ', ['email' => $request->email]);
             return response()->json(['success'=>false,'message'=>'Este CPF já está cadastrado para um usuário Desbankei, faça o acesso utilizando os dados do mesmo, em caso de dúvidas nos contacte.']);
         }
 
@@ -457,7 +455,7 @@ class UsuarioController extends Controller
 
         $json['success'] = true;
 
-        Log::debug('Usuário criado com sucesso: ', ['email' => $request->email]);
+        Log::debug('Criado com sucesso. Usuário: ', ['email' => $request->email]);
 
         return response()->json($json);
     }
@@ -761,7 +759,7 @@ class UsuarioController extends Controller
   
         $user = Auth::user();
         Log::debug("GET: QINDIN-API/user/home para ID: " . $user->id . " EMAIL: " . $user->email . " STATUS: " . $user->status);
-        
+
         //Log::debug("Carregando dados do seguinte usuário: ", ['id' => $user->id, 'email' => $user->email, 'status' => $user->status]);
         /*if ($user->status == 1) {
             return response()->json(['success'=>false,'message'=>"Olá! No momento estamos com altas demandas em nossos apps.\n\nPor isso, pedimos desculpas pela inconveniência no envio de seus comprovantes por aqui. Contudo, já providenciamos o crescimento de nosso time e todos nós estamos à postos para tudo voltar ao normal.\n\nEstamos felizes em saber que o número esperado de acessos ultrapassou nossas estimativas.\n\nPara finalizar o seu cadastro, por gentileza, envie os seguintes documentos por e-mail colocando seu CPF e NOME COMPLETO no ASSUNTO:\n\n• Cópia do CPF (frente) + RG (frente e verso) OU CNH (aberta);\n• Comprovante de residência atualizado;\n• Selfie segurando seu documento com foto ao lado do rosto;\n• Extrato bancário dos últimos 12 meses (é por um bom motivo);\n\nDevido à alta demanda, nosso prazo para resposta de análise de crédito é de 3 dias úteis.\n\nAgradecemos pela compreensão. Estamos aqui por você!\n\nNosso e-mail é: contato@desbankei.com.br\n\nConte com a gente!"]);
@@ -862,8 +860,6 @@ class UsuarioController extends Controller
     // dados rapido usuário
     public function userData(Request $request) {
 
-        Log::debug("GET: QINDIN-API/user");
-
         $arrsexo = [
             'M'=>'Masculino',
             'F'=>'Feminino'
@@ -871,9 +867,10 @@ class UsuarioController extends Controller
         
         $user = Auth::user();
 
-        Log::debug('Usuário encontrado: ', ['id' => $user->id, 'email' => $user->email, 'status' => $user->status]);
+        Log::debug("GET: QINDIN-API/user para ID: " . $user->id . " EMAIL: " . $user->email . " STATUS: " . $user->status);
 
         if ($user->status == 4) {
+            Log::debug("Cadastro bloqueado. Usuário ID: " . $user->id . " EMAIL: " . $user->email . " STATUS: " . $user->status);
             return response()->json(['success'=>false,'message'=>'Cadastro bloqueado']);
         }
         $user->faturas_abertas = $user->faturas()->where('pago',0)->count();
@@ -893,7 +890,7 @@ class UsuarioController extends Controller
         
         $json = ['success'=>true,'user'=>$user];
 
-        Log::debug("Usuário encontrado e verificado com sucesso: ", ['id' => $user->id]);
+        Log::debug("Registro encontrado e verificado com sucesso. Usuário: ", ['id' => $user->id]);
 
         return response()->json($json);
     }
@@ -983,18 +980,18 @@ class UsuarioController extends Controller
 
     public function forgotMyPass(Request $request){
 
-        Log::debug("POST: QINDIN-API/senha/redefinir");
+        Log::debug("POST: QINDIN-API/senha/redefinir para EMAIL: " . $request->email);
 
         try{
             $email = $request->email;
             $usuario = Usuario::all()->where('email',$email)->first();
 
             if(is_null($usuario)){
-                Log::debug("Usuário não cadastrado tentou pedir email de 'Esqueci minha senha': ", ['email' => $request->email]);
+                Log::debug("Não cadastrado tentou pedir email de 'Esqueci minha senha'. Email: ", ['email' => $request->email]);
                 return response()->json(['success'=>false,'message'=>'Usuário não cadastrado']);
             }
             if(is_null($usuario->email)){
-                Log::debug("Email não cadastrado tentou pedir email de 'Esqueci minha senha': ", ['email' => $request->email]);
+                Log::debug("Email não cadastrado tentou pedir email de 'Esqueci minha senha'. Email: ", ['email' => $request->email]);
                 return response()->json(['success'=>false,'message'=>'Email não cadastrado']);
             }
             $usuario->limite_password = date("Y-m-d H:i:s");
@@ -1002,12 +999,12 @@ class UsuarioController extends Controller
             $usuario->save();
             Mail::to($usuario->email)->send(new ResetPassword($token,$usuario));
         }catch(Throwable $error){
-            Log::error("Erro/Exception ao pedir email de 'Esqueci minha senha no usuário: ", ['email' => $request->email]);
+            Log::error("Erro/Exception ao pedir email de 'Esqueci minha senha'. Usuário: ", ['id' => $usuario->id, 'email' => $request->email]);
             Log::error("Exception: ", ['exception' => $error]);
             return response()->json(['success'=>false,'message'=>'Erro ao enviar o email']);
         }
 
-        Log::debug("Usuário solicitou o email de 'Esqueci minha senha' com sucesso: ", ['email' => $request->email]);
+        Log::debug("Usuário solicitou o email de 'Esqueci minha senha' com sucesso. Email: ", ['email' => $request->email]);
         return response()->json(['success'=>true,'token'=>$token]);
     }
 
