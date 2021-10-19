@@ -275,7 +275,7 @@ class UsuarioController extends Controller
     {
 
         Log::debug("POST: QINDIN-API/login");
-        Log::debug('Usuário tentando fazer login: ', ['id' => $request->username]);
+        Log::debug(['email' => $request->username], ' tentando fazer login.');
 
         $tokenRequest = $request->create('/oauth/token', 'POST', $request->all());
         $response = Route::dispatch($tokenRequest);
@@ -289,6 +289,8 @@ class UsuarioController extends Controller
             $json['user']['limite_total'] = $user['limite_total'];
             $json['user']['limite_utilizado'] = $user['limite_utilizado'];
             $json['success'] = true;
+
+            Log::debug(['id' => $user->id, $user->email], ' efetuou login com sucesso.');
             return response()->json($json);
         } else {
             return response()->json(['success'=>false,'message'=>'E-mail ou senha incorretos']);
