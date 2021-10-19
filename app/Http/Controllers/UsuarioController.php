@@ -311,6 +311,10 @@ class UsuarioController extends Controller
 
     public function userStartConvite(Request $request) {
 
+        Log::debug("POST: QINDIN-API/user/startconvite");
+        Log::debug('Usuário tentando fazer o cadastro: ', ['email' => $request->email]);
+
+
         if (!isset($request->termos) && $request->termos != 'true') {
 
             Log::debug('Usuário não aceitou os termos: ', ['email' => $request->email]);
