@@ -969,13 +969,19 @@ class UsuarioController extends Controller
     }
 
     public function forgotMyPass(Request $request){
+
+        Log::debug("POST: QINDIN-API/senha/redefinir");
+
         try{
             $email = $request->email;
             $usuario = Usuario::all()->where('email',$email)->first();
+
             if(is_null($usuario)){
+                Log::debug("Usuário não cadastrado tentou pedir email de 'Esqueci minha senha': ", ['email' => $request->email]);
                 return response()->json(['success'=>false,'message'=>'Usuário não cadastrado']);
             }
             if(is_null($usuario->email)){
+                Log::debug("Email não cadastrado tentou pedir email de 'Esqueci minha senha': ", ['email' => $request->email]);
                 return response()->json(['success'=>false,'message'=>'Email não cadastrado']);
             }
             $usuario->limite_password = date("Y-m-d H:i:s");
@@ -983,8 +989,12 @@ class UsuarioController extends Controller
             $usuario->save();
             Mail::to($usuario->email)->send(new ResetPassword($token,$usuario));
         }catch(Throwable $error){
+            Log::error("Erro/Exception ao pedir email de 'Esqueci minha senha no usuário: ", ['email' => $request->email]);
+            Log::error("Exception: ", ['exception' => $error]);
             return response()->json(['success'=>false,'message'=>'Erro ao enviar o email']);
         }
+
+        Log::debug("Usuário solicitou o email de 'Esqueci minha senha' com sucesso: ", ['email' => $request->email]);
         return response()->json(['success'=>true,'token'=>$token]);
     }
 
