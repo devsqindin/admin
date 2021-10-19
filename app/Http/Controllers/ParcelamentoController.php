@@ -253,6 +253,7 @@ class ParcelamentoController extends Controller
 
     public function calcular(Request $request) {
     	$user = Auth::user();
+
     	if ($user) {
 
     		$parcelas = [];

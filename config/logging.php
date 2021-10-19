@@ -37,7 +37,7 @@ return [
     'channels' => [
         'stack' => [
             'driver' => 'stack',
-            'channels' => ['single'],
+            'channels' => ['single', 'errorlog'],
             'ignore_exceptions' => false,
         ],
 
@@ -45,6 +45,18 @@ return [
             'driver' => 'single',
             'path' => storage_path('logs/laravel.log'),
             'level' => 'debug',
+        ],
+
+        'errorlog' => [
+            'driver' => 'errorlog',
+            'path' => storage_path('logs/laravel.log'),
+            'level' => 'error',
+        ],
+
+        'emergency' => [
+            'driver' => 'emergency',
+            'level' => 'emergency',
+            'path' => storage_path('logs/emergency_laravel.log'),
         ],
 
         'daily' => [
@@ -86,18 +98,9 @@ return [
             'level' => 'debug',
         ],
 
-        'errorlog' => [
-            'driver' => 'errorlog',
-            'level' => 'debug',
-        ],
-
         'null' => [
             'driver' => 'monolog',
             'handler' => NullHandler::class,
-        ],
-
-        'emergency' => [
-            'path' => storage_path('logs/laravel.log'),
         ],
     ],
 

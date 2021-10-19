@@ -20,6 +20,8 @@ use DataTables;
 use DB;
 use Storage;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\Log;
+//use Illuminate\Log\LogManager;
 
 class UsuarioController extends Controller
 {
@@ -271,6 +273,9 @@ class UsuarioController extends Controller
 
     public function logInProtected(Request $request)
     {
+
+        Log::debug("POST: QINDIN-API/login");
+        Log::debug('Usuário tentando fazer login: ', ['id' => $request->username]);
 
         $tokenRequest = $request->create('/oauth/token', 'POST', $request->all());
         $response = Route::dispatch($tokenRequest);
