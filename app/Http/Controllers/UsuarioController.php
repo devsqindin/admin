@@ -758,10 +758,11 @@ class UsuarioController extends Controller
 
     // dashboard app - carregando dados usuário
     public function userHome() {
-
-        Log::debug("GET: QINDIN-API/user/home");
+  
         $user = Auth::user();
-        Log::debug("Carregando dados do seguinte usuário: ", ['id' => $user->id, 'email' => $user->email, 'status' => $user->status]);
+        Log::debug("GET: QINDIN-API/user/home para ID: " . $user->id . " EMAIL: " . $user->email . " STATUS: " . $user->status);
+        
+        //Log::debug("Carregando dados do seguinte usuário: ", ['id' => $user->id, 'email' => $user->email, 'status' => $user->status]);
         /*if ($user->status == 1) {
             return response()->json(['success'=>false,'message'=>"Olá! No momento estamos com altas demandas em nossos apps.\n\nPor isso, pedimos desculpas pela inconveniência no envio de seus comprovantes por aqui. Contudo, já providenciamos o crescimento de nosso time e todos nós estamos à postos para tudo voltar ao normal.\n\nEstamos felizes em saber que o número esperado de acessos ultrapassou nossas estimativas.\n\nPara finalizar o seu cadastro, por gentileza, envie os seguintes documentos por e-mail colocando seu CPF e NOME COMPLETO no ASSUNTO:\n\n• Cópia do CPF (frente) + RG (frente e verso) OU CNH (aberta);\n• Comprovante de residência atualizado;\n• Selfie segurando seu documento com foto ao lado do rosto;\n• Extrato bancário dos últimos 12 meses (é por um bom motivo);\n\nDevido à alta demanda, nosso prazo para resposta de análise de crédito é de 3 dias úteis.\n\nAgradecemos pela compreensão. Estamos aqui por você!\n\nNosso e-mail é: contato@desbankei.com.br\n\nConte com a gente!"]);
         }*/
@@ -847,7 +848,7 @@ class UsuarioController extends Controller
         $pnome = explode(" ",$user['nome_completo']);
         $user['nome_app'] = strtolower($pnome[0]);
 
-        Log::debug("Dados de fatura/parcelas do usuário recuperados com sucesso:", ['id' => $user->id, 'faturas' => $faturas, 'parcelas' => $parcelas]);
+        Log::debug("Dados de fatura/parcelas do usuário recuperados com sucesso:", ['id' => $user['id'], 'faturas' => $faturas, 'parcelas' => $parcelas]);
 
         return response()->json(['success'=>true,'user'=>$user,'faturas'=>$faturas,'parcelas'=>$parcelas]);
     }
@@ -950,7 +951,9 @@ class UsuarioController extends Controller
     }
 
     public function userAntecipa(Request $request) {
+        
         $user = Auth::user();
+
         if ($user->status == 4) {
             return response()->json(['success'=>false,'message'=>'Cadastro bloqueado']);
         }
