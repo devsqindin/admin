@@ -275,7 +275,7 @@ class UsuarioController extends Controller
     {
 
         Log::debug("POST: QINDIN-API/login");
-        Log::debug(['email' => $request->username], ' tentando fazer login.');
+        Log::debug('Usuário tentando fazer login: ', ['email' => $request->username]);
 
         $tokenRequest = $request->create('/oauth/token', 'POST', $request->all());
         $response = Route::dispatch($tokenRequest);
@@ -290,16 +290,22 @@ class UsuarioController extends Controller
             $json['user']['limite_utilizado'] = $user['limite_utilizado'];
             $json['success'] = true;
 
-            Log::debug(['id' => $user->id, $user->email], ' efetuou login com sucesso.');
+            Log::debug('Usuário logou com sucesso: ', ['id' => $user->id, 'email' => $user->email]);
             return response()->json($json);
         } else {
+            Log::debug('Usuário falhou no login: ', ['id' => $user->id, 'email' => $user->email]);
             return response()->json(['success'=>false,'message'=>'E-mail ou senha incorretos']);
         }
     }
 
     public function bancos() {
 
+        Log::debug("GET: QINDIN-API/bancos");
+        
         $bancos = DB::select("SELECT codigo, UPPER(nome) AS nome FROM bancos ORDER BY nome");
+
+        Log::debug('Lista de bancos retornada com sucesso: ', ['bancos' => $bancos->bancos]);
+
         return response()->json(['success'=>true,'bancos'=>$bancos]);
     }
 
@@ -837,11 +843,18 @@ class UsuarioController extends Controller
 
     // dados rapido usuário
     public function userData(Request $request) {
+
+        Log::debug("GET: QINDIN-API/user");
+
         $arrsexo = [
             'M'=>'Masculino',
             'F'=>'Feminino'
         ];
+        
         $user = Auth::user();
+
+        Log::debug('Usuário encontrado: ', ['id' => $user->id, 'email' => $user->email, 'status' => $user->status]);
+
         if ($user->status == 4) {
             return response()->json(['success'=>false,'message'=>'Cadastro bloqueado']);
         }
@@ -854,11 +867,16 @@ class UsuarioController extends Controller
             $user = $this->pegaBanco($user);
         }
         if ($request->query('tela') == 'bancario') {
+            Log::debug("GET: QINDIN-API/user -> query('tela')");
             $bancos = DB::select("SELECT codigo, UPPER(nome) AS nome FROM bancos ORDER BY nome");
             $user['bancos'] = $bancos;
             $json = ['success'=>true,'user'=>$user,'bancos'=>$bancos];    
         }
+        
         $json = ['success'=>true,'user'=>$user];
+
+        Log::debug("Usuário encontrado e verificado com sucesso: ", ['id' => $user->id]);
+
         return response()->json($json);
     }
 
