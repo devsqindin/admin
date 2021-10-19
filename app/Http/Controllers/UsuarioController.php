@@ -313,14 +313,15 @@ class UsuarioController extends Controller
 
         if (!isset($request->termos) && $request->termos != 'true') {
 
+            Log::debug('Usuário não aceitou os termos: ', ['email' => $request->email]);
             return response()->json(['success'=>false,'message'=>'É necessário aceitar o Termo de Uso e a Política de Privacidade para criar seu cadastro no Desbankei']);
-
         }
 
         DB::beginTransaction();
 
         if (Usuario::get()->where('cpf',$request->cpf)->first()) {
 
+            Log::debug('Usuário já tem CPF cadastrado no sistema: ', ['email' => $request->email]);
             return response()->json(['success'=>false,'message'=>'Este CPF já está cadastrado para um usuário Desbankei, faça o acesso utilizando os dados do mesmo, em caso de dúvidas nos contacte.']);
         }
 
@@ -451,6 +452,8 @@ class UsuarioController extends Controller
         DB::commit();
 
         $json['success'] = true;
+
+        Log::debug('Usuário criado com sucesso: ', ['email' => $request->email]);
 
         return response()->json($json);
     }
