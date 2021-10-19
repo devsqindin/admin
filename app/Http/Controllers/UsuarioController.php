@@ -951,16 +951,21 @@ class UsuarioController extends Controller
         
         $user = Auth::user();
 
+        Log::debug("POST: QINDIN-API/user/antecipa para ID: " . $user->id . " EMAIL: " . $user->email);
+
         if ($user->status == 4) {
+            Log::debug("Cadastro bloqueado. Usuário: ", ['id' => $user->id, 'email' => $user->email, 'status' => $user->status]);
             return response()->json(['success'=>false,'message'=>'Cadastro bloqueado']);
         }
         if (!$user->validateForPassportPasswordGrant($request->password)) {
+            Log::debug("Senha inválida. Usuário: ", ['id' => $user->id, 'email' => $user->email, 'status' => $user->status]);
             return response()->json(['success'=>false,'message'=>'Senha inválida! Digite novamente.']);
         }
 
         $fatura = $user->faturas()->find($request->id_fatura);
 
         if ($this->fNum($request->valor_antecipa) > $fatura->valor_total) {
+            Log::debug("Tentativa de antecipar um valor superior ao da fatura. Usuário: ", ['id' => $user->id]);
             return response()->json(['success'=>false,'message'=>'Não é permitido um valor superior ao da fatura']);
         }
 
@@ -972,9 +977,9 @@ class UsuarioController extends Controller
         $fatura->antecipa = 1;
         $fatura->save();
 
-        Mail::to('adiantamento@desbankei.com.br')->send(new LateBill($user,$dados));
-        //Mail::to('suporte@f5webnet.com.br')->send(new LateBill($user,$dados));
+        Mail::to('adiantamento@qindin.com.br')->send(new LateBill($user,$dados));
 
+        Log::debug("Fatura antecipada com sucesso e email enviado. Usuário ID: " . $user->id . " DADOS DA FATURA: " . $dados);
         return response()->json(['success'=>true]);
     }
 
