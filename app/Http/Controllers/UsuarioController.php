@@ -737,8 +737,12 @@ class UsuarioController extends Controller
     public function userPassword(Request $request) {
 
         $user = Auth::user();
+
+        Log::debug("POST: QINDIN-API/user/password para ID: " . $user->id . " EMAIL: " . $user->email);
+
         if (isset($request->password)) {
             if (!Hash::check($request->atual_password, $user->password)) {
+                Log::debug("Senha atual incorreta. Usuário ID: " . $user->id . " EMAIL: " . $user->email);
                 return response()->json(['success'=>false,'message'=>'Senha atual está incorreta']);
             }
             if ($request->password == $request->rep_password) {
@@ -747,10 +751,12 @@ class UsuarioController extends Controller
                 ];
                 $msg = 'Senha alterada com sucesso';
             } else {
+                Log::debug("Senha nova e repetir senha são diferentes. Usuário ID: " . $user->id . " EMAIL: " . $user->email);
                 return response()->json(['success'=>false,'message'=>'Senhas nova e repetir senha são diferentes']);
             }
         }
         $user->update($dados);
+        Log::debug("Senha alterada com sucesso. Usuário ID: " . $user->id . " EMAIL: " . $user->email);
         return response()->json(['success'=>true]);
     }
 
