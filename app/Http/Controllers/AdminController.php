@@ -705,7 +705,7 @@ class AdminController extends Controller
     	return view('clientes',compact('nomeTela','columns','combos','total','mtotal','totp'));
     }
 
-    public function pegaClientes(Request $request,$total=0) {
+    public function pegaClientes($total=0) {
         $usuarios = Usuario::with('fatura')->withCount(['parcelamentos as fiducia'=>function($query){
             $query->whereNull('fiducia_geral');
         }])->where('status','!=',7);
@@ -770,6 +770,30 @@ class AdminController extends Controller
             }
         });
         return $quick->make(true);
+    }
+
+    /**
+     * Exporta a lista completa de usuários da nossa tabela Usuário para CSV. Se aproveitando do método já existente que a grid do Painel Admin usa.
+     */
+    public function exportClientesCsv() {
+
+        $meusClientesGrid = $this->pegaClientes(null);
+
+        /*if (!isset($meusClientesGrid)) {
+            return response()->json(['success'=>false]);
+        }*/
+
+        $my_var_clientes = $meusClientesGrid->getData();
+        var_dump($my_var_clientes->recordsTotal);
+        var_dump($my_var_clientes->data[0]->id);
+        var_dump($my_var_clientes->data[0]->nome_completo);
+        var_dump($my_var_clientes->data[0]->cpf);
+        var_dump($my_var_clientes->data[0]->email);
+        var_dump($my_var_clientes->data[0]->whatsapp);
+        var_dump($my_var_clientes->data[0]->status_fatura);
+        var_dump($my_var_clientes->data[0]->status);
+
+        return response()->json(['success'=>true]);
     }
 
     public function perguntas() {

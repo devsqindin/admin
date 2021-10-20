@@ -94,6 +94,8 @@ Route::prefix('api')->name('api.')->group(function () {
 		Route::get('/operador/{id}/apagar','AdminController@apagarOperador');
 		Route::get('/motivos','AdminController@pegaMotivos');
 		Route::get('/motivo/{id}','AdminController@pegaMotivo');
+
+		Route::post('/clientes/export', 'AdminController@exportClientesCsv');
 	});
 });
 
