@@ -77,6 +77,12 @@ function popCombo($arr) {
 <script src="https://cdn.datatables.net/fixedheader/3.1.8/js/dataTables.fixedHeader.min.js"></script>
 <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/gasparesganga-jquery-loading-overlay@2.1.7/dist/loadingoverlay.min.js"></script>
 <script>
+
+  /*function exportUsers(_this) {
+      let _url = $(_this).data('href');
+      window.location.href = _url;
+   }*/
+
   $(function () {
     
     var table = $('#tuble').DataTable({
@@ -326,7 +332,7 @@ function popCombo($arr) {
         $.post('{{URL::to('/')}}/api/clientes/export', {
 
         }, function(data) {
-          alert("terminou");
+          alert("CSV gerado com sucesso.");
 
           
           /*if (data.success) {
