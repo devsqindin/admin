@@ -31,7 +31,8 @@ function popCombo($arr) {
     {{-- <h3 class="card-title">DataTable with default features</h3> --}}
     @if(!Auth()->user()->temPermissao('clientes','leitura'))
       <button type="button" id="btNewRegister" class="btn btn-primary">Novo Cliente (Convite)</button>
-      <button type="button" id="btExportCsvClientes" class="btn btn-primary">Exportar CSV</button>
+      <button type="button" id="btExportCsvClientes" class="btn btn-primary">Exportar CLIENTES</button>
+      <button type="button" id="btExportCsvFaturas" class="btn btn-primary">Exportar FATURAS</button>
     @endif
   </div>
   <!-- /.card-header -->
@@ -345,6 +346,36 @@ function popCombo($arr) {
           } else {
             alert("FALHA NA EXPORTAÇÃO! Contate a equipe técnica.");
           }
+        });
+      });
+
+      $('#btExportCsvFaturas').click(function() {
+
+        alert("Exportando faturas para CSV....");
+
+        $('#processingIndicator').css('display', 'none');
+        //$('#tuble').LoadingOverlay("show");  
+        $.LoadingOverlay("show");  
+
+        $.ajaxSetup({
+            headers: {
+                'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+            }
+        });
+
+        $.post('{{URL::to('/')}}/api/faturas/export', {
+
+        }, function(data) {
+
+          //$('#tuble').LoadingOverlay("hide", true);
+          $.LoadingOverlay("hide", true);
+
+          /*if (data.success) {
+            alert("CSV Exportado com sucesso! Arquivo se encontra no diretório /public/FATURAS.csv");
+          } else {
+            alert("FALHA NA EXPORTAÇÃO! Contate a equipe técnica.");
+          }*/
+          console.log(data);
         });
       });
 

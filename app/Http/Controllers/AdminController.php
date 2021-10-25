@@ -707,6 +707,13 @@ class AdminController extends Controller
     	return view('clientes',compact('nomeTela','columns','combos','total','mtotal','totp'));
     }
 
+    public function importaFaturas() {
+
+        $faturas = Fatura::all();
+
+        return $quick->make(true); 
+    }
+
     public function pegaClientes($total=0) {
         $usuarios = Usuario::with('fatura')->withCount(['parcelamentos as fiducia'=>function($query){
             $query->whereNull('fiducia_geral');
@@ -772,6 +779,16 @@ class AdminController extends Controller
             }
         });
         return $quick->make(true);
+    }
+
+    /**
+     * Exporta a tabela de faturas integralmente.
+     */
+    public function exportFaturasCsv() {
+
+        $faturas = $this->importaFaturas();
+
+        return $faturas;
     }
 
     /**

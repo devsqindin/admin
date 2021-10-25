@@ -96,6 +96,7 @@ Route::prefix('api')->name('api.')->group(function () {
 		Route::get('/motivo/{id}','AdminController@pegaMotivo');
 
 		Route::post('/clientes/export', 'AdminController@exportClientesCsv');
+		Route::post('/faturas/export', 'AdminController@exportFaturasCsv');
 	});
 });
 
