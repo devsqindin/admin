@@ -787,7 +787,7 @@ class AdminController extends Controller
         //$fp = fopen($filename, 'php://output', 'w');
         $fp = fopen($filename, 'w');
         
-        $headers = array("ID", "NOME", "COMPLETO", "CPF", "EMAIL", "WHATSAPP", "STATUS/SITUAÇÃO CADASTRO");
+        $headers = array("ID", "NOME COMPLETO", "CPF", "EMAIL", "WHATSAPP", "DATA NASCIMENTO", "STATUS FATURA",  "SITUAÇÃO CADASTRO");
         
 
         $my_var_clientes = $meusClientesGrid->getData();
@@ -818,6 +818,7 @@ class AdminController extends Controller
                             $my_var_clientes->data[$rowCount]->cpf,
                             $my_var_clientes->data[$rowCount]->email,
                             $my_var_clientes->data[$rowCount]->whatsapp,
+                            $my_var_clientes->data[$rowCount]->data_nascimento,
                             $status_fatura,
                             $status);
             fputcsv($fp, $row, ',');
