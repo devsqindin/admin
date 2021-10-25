@@ -789,11 +789,13 @@ class AdminController extends Controller
         
         $headers = array("ID", "NOME", "COMPLETO", "CPF", "EMAIL", "WHATSAPP", "STATUS/SITUAÇÃO CADASTRO");
         
-        /*if (!isset($meusClientesGrid)) {
-            return response()->json(['success'=>false]);
-        }*/
 
         $my_var_clientes = $meusClientesGrid->getData();
+
+        if ($my_var_clientes === NULL) { 
+            
+            return response()->json(['success'=>false]);
+        }
         
         /*var_dump($my_var_clientes->recordsTotal);
         var_dump($my_var_clientes->data[0]->id);
@@ -806,7 +808,7 @@ class AdminController extends Controller
 
         fputcsv($fp, $headers);
 
-        for($rowCount = 0; $rowCount < 50; $rowCount++) {
+        for($rowCount = 0; $rowCount < $my_var_clientes->recordsTotal; $rowCount++) {
 
             $status_fatura = $this->statusFaturaPorIdentificador($my_var_clientes->data[$rowCount]->status_fatura);
             $status = $this->statusClientePorIdentificador($my_var_clientes->data[$rowCount]->status);
@@ -822,7 +824,8 @@ class AdminController extends Controller
         }
 
         fclose($fp);
-        return $this->getDownload($filename);
+        //return $this->getDownload($filename);
+        return response()->json(['success'=>true]); 
     }
 
     public function getDownload($filename){

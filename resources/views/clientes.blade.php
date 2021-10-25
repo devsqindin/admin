@@ -321,7 +321,11 @@ function popCombo($arr) {
 
       $('#btExportCsvClientes').click(function() {
 
-        alert("Exportando clientes para CSV!");
+        alert("Exportando clientes para CSV....");
+
+        $('#processingIndicator').css('display', 'none');
+        //$('#tuble').LoadingOverlay("show");  
+        $.LoadingOverlay("show");  
 
         $.ajaxSetup({
             headers: {
@@ -332,15 +336,15 @@ function popCombo($arr) {
         $.post('{{URL::to('/')}}/api/clientes/export', {
 
         }, function(data) {
-          alert("CSV gerado com sucesso.");
 
-          
-          /*if (data.success) {
-            alert("Exportado com sucesso");
+          //$('#tuble').LoadingOverlay("hide", true);
+          $.LoadingOverlay("hide", true);
+
+          if (data.success) {
+            alert("CSV Exportado com sucesso! Arquivo se encontra no diretório /public/CLIENTES.csv");
           } else {
-            alert("FALHA NA EXPORTAÇÃO!");
-            console.log(data);
-          }*/
+            alert("FALHA NA EXPORTAÇÃO! Contate a equipe técnica.");
+          }
         });
       });
 
