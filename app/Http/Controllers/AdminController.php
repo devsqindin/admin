@@ -710,8 +710,9 @@ class AdminController extends Controller
     public function importaFaturas() {
 
         $faturas = Fatura::all();
+        $quick = DataTables::of($faturas);
 
-        return $quick->make(true); 
+        return $quick->make(true);
     }
 
     public function pegaClientes($total=0) {
@@ -788,7 +789,51 @@ class AdminController extends Controller
 
         $faturas = $this->importaFaturas();
 
-        return $faturas;
+        $filename = "FATURAS.csv";
+        header("Content-disposition: attachment; filename=".$filename);
+        header("Content-Type: text/csv");
+        $headers = array("ID", "VALOR TOTAL", "FECHAMENTO", "VENCIMENTO", "DATA PAGAMENTO", "ANOMES", "MAX PARCELAS", "REG DATE",  "FECHADO", "PAGO", "ANTECIPA", "URL", "DIGITOS", "STATUS", "CRIADO EM", "ATUALIZADO EM", "EXCLUÍDO EM", "ID USUÁRIO");
+        $fp = fopen($filename, 'w');
+
+        $my_var_faturas = $faturas->getData();        
+
+        if ($my_var_faturas === NULL) { 
+            
+            return response()->json(['success'=>false]);
+        }
+
+        fputcsv($fp, $headers);
+
+        for($rowCount = 0; $rowCount < $my_var_faturas->recordsTotal; $rowCount++) {
+
+            //$status_fatura = $this->statusFaturaPorIdentificador($my_var_clientes->data[$rowCount]->status_fatura);
+            //$status = $this->statusClientePorIdentificador($my_var_clientes->data[$rowCount]->status);
+
+            $row = array($my_var_faturas->data[$rowCount]->id, 
+                            $my_var_faturas->data[$rowCount]->valor_total, 
+                            $my_var_faturas->data[$rowCount]->fechamento,
+                            $my_var_faturas->data[$rowCount]->vencimento,
+                            $my_var_faturas->data[$rowCount]->dtpagamento,
+                            $my_var_faturas->data[$rowCount]->anomes,
+                            $my_var_faturas->data[$rowCount]->maxparcelas,
+                            $my_var_faturas->data[$rowCount]->reg_date,
+                            $my_var_faturas->data[$rowCount]->fechado,
+                            $my_var_faturas->data[$rowCount]->pago,
+                            $my_var_faturas->data[$rowCount]->antecipa,
+                            $my_var_faturas->data[$rowCount]->url,
+                            $my_var_faturas->data[$rowCount]->digitos,
+                            $my_var_faturas->data[$rowCount]->status,
+                            $my_var_faturas->data[$rowCount]->created_at,
+                            $my_var_faturas->data[$rowCount]->updated_at,
+                            $my_var_faturas->data[$rowCount]->deleted_at,
+                            $my_var_faturas->data[$rowCount]->id_usuario
+                            );
+            fputcsv($fp, $row, ',');
+        }
+
+        fclose($fp);
+        
+        return response()->json(['success'=>true]);
     }
 
     /**

@@ -370,12 +370,11 @@ function popCombo($arr) {
           //$('#tuble').LoadingOverlay("hide", true);
           $.LoadingOverlay("hide", true);
 
-          /*if (data.success) {
+          if (data.success) {
             alert("CSV Exportado com sucesso! Arquivo se encontra no diretório /public/FATURAS.csv");
           } else {
             alert("FALHA NA EXPORTAÇÃO! Contate a equipe técnica.");
-          }*/
-          console.log(data);
+          }
         });
       });
 
