@@ -41,8 +41,8 @@ class Blocked extends Notification
      */
     public function toMail($notifiable)
     {
-        return (new MailMessage)->from('poderesponder@desbankei.com.br','Desbankei')
-        ->subject('[Desbankei] Seu crédito está bloqueado')
+        return (new MailMessage)->from('poderesponder@qindin.com.br','Qindin')
+        ->subject('[Qindin] Seu crédito está bloqueado')
         ->markdown('desbankei.blocked',['user'=>$this->user]);
     }
 

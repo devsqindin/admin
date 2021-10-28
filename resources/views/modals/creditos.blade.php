@@ -102,7 +102,9 @@ $(function(){
           alert('Crédito importado com sucesso!')
           table.ajax.reload()
         } else {
-          alert('ERRO: '+data.message)
+          alert('ERRO: '+ data.message)
+          console.log("Erro: " + data.message);
+          console.log("Payload enviado: " + data.payload);
           button.removeAttr('disabled').text('Enviar à Fidúcia')
         }
       })

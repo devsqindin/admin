@@ -41,8 +41,8 @@ class Rejected extends Notification
      */
     public function toMail($notifiable)
     {
-        return (new MailMessage)->from('poderesponder@desbankei.com.br','Desbankei')
-        ->subject('[Desbankei] Não foi possível liberar seu pedido de crédito')
+        return (new MailMessage)->from('poderesponder@qindin.com.br','Qindin')
+        ->subject('[Qindin] Não foi possível liberar seu pedido de crédito')
         ->markdown('desbankei.rejected',['user'=>$this->user]);
     }
 

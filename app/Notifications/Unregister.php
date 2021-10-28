@@ -41,8 +41,8 @@ class Unregister extends Notification
      */
     public function toMail($notifiable)
     {
-        return (new MailMessage)->from('poderesponder@desbankei.com.br','Desbankei')
-        ->subject('[Desbankei] Seu cadastro foi bloqueado')
+        return (new MailMessage)->from('poderesponder@qindin.com.br','Qindin')
+        ->subject('[Qindin] Seu cadastro foi bloqueado')
         ->markdown('desbankei.unregister',['user'=>$this->user]);
     }
 

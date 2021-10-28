@@ -31,6 +31,6 @@ class ResetPassword extends Mailable
      */
     public function build()
     {
-        return $this->from('poderesponder@desbankei.com.br','Desbankei')->subject('[Desbankei] Redefinição de Senha')->markdown('desbankei.reset_password',['user'=>$this->user,'resetToken'=>$this->resetToken]);
+        return $this->from('poderesponder@qindin.com.br','Qindin')->subject('[Qindin] Redefinição de Senha')->markdown('desbankei.reset_password',['user'=>$this->user,'resetToken'=>$this->resetToken]);
     }
 }

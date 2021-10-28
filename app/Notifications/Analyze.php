@@ -41,8 +41,8 @@ class Analyze extends Notification
      */
     public function toMail($notifiable)
     {
-        return (new MailMessage)->from('poderesponder@desbankei.com.br','Desbankei')
-        ->subject('[Desbankei] Análise de Crédito')
+        return (new MailMessage)->from('poderesponder@qindin.com.br','Qindin')
+        ->subject('[Qindin] Análise de Crédito')
         ->markdown('desbankei.analyze',['user'=>$this->user]);
     }
 

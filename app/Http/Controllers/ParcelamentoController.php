@@ -98,7 +98,7 @@ class ParcelamentoController extends Controller
             CURLOPT_URL => env('FIDUCIA_URL_SIMULAR','https://api.bancarizacao.fiducia.digital/api/v1/bancarizacao/simular'),
             CURLOPT_RETURNTRANSFER => true,
             CURLOPT_HTTPAUTH => CURLAUTH_BASIC,
-            CURLOPT_USERPWD => $userName . ':' . $password,
+            //CURLOPT_USERPWD => $userName . ':' . $password,
             /**
              * Specify POST method
              */
@@ -107,7 +107,9 @@ class ParcelamentoController extends Controller
              * Specify request headers
              */
             CURLOPT_HTTPHEADER => [
-                'user: '.env('FIDUCIA_HEADER')
+                'Authorization: Basic UUlORElOOnRBclN4cThV',
+                //'User: '.env('FIDUCIA_HEADER')
+                'User: 40076375000150'
             ],
             /**
              * Specify request content
@@ -208,6 +210,9 @@ class ParcelamentoController extends Controller
         // consulta api fiducia - bancarização
         $consulta = $this->apiSimularFiducia($valor,$valor_tac,$dtvencimento,$meses,$taxa_juros);
 
+        $cet = null;
+        $iof = null;
+        $parcela = null;
 
         if ($consulta) {
             $cet = $consulta['resposta']['CET_FI'];
@@ -248,6 +253,7 @@ class ParcelamentoController extends Controller
 
     public function calcular(Request $request) {
     	$user = Auth::user();
+
     	if ($user) {
 
     		$parcelas = [];
@@ -270,6 +276,10 @@ class ParcelamentoController extends Controller
                 $parcelaCet[$p] = $financiar['cet'];
                 $dtVencimentoPrimeira = $financiar['dtvencimento'];
     		}
+
+            if($parcelas[3] == null) {
+                return response()->json(['success'=>false,'message'=>'A API Fidúcia está apresentando problemas para retornar o cálculo.']);
+            }
 
     		return response()->json(['success'=>true,'dtvencimento'=>date("d/m/Y",strtotime($dtVencimentoPrimeira)),'juros'=>$juros,'valor_solicitado'=>$valor_solicitado,'parcelas'=>$parcelas,'iof'=>$parcelaIof,'cet'=>$parcelaCet]);
     	} else {

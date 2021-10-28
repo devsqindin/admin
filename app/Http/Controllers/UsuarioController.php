@@ -20,6 +20,8 @@ use DataTables;
 use DB;
 use Storage;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\Log;
+//use Illuminate\Log\LogManager;
 
 class UsuarioController extends Controller
 {
@@ -272,6 +274,9 @@ class UsuarioController extends Controller
     public function logInProtected(Request $request)
     {
 
+        Log::debug("POST: QINDIN-API/login");
+        Log::debug('Usuário tentando fazer login: ', ['email' => $request->username]);
+
         $tokenRequest = $request->create('/oauth/token', 'POST', $request->all());
         $response = Route::dispatch($tokenRequest);
         $json = (array) json_decode($response->getContent());
@@ -284,30 +289,41 @@ class UsuarioController extends Controller
             $json['user']['limite_total'] = $user['limite_total'];
             $json['user']['limite_utilizado'] = $user['limite_utilizado'];
             $json['success'] = true;
+
+            Log::debug('Usuário logou com sucesso: ', ['id' => $user->id, 'email' => $user->email]);
             return response()->json($json);
         } else {
+            Log::debug('Usuário falhou no login: ', ['id' => $user->id, 'email' => $user->email]);
             return response()->json(['success'=>false,'message'=>'E-mail ou senha incorretos']);
         }
     }
 
     public function bancos() {
 
+        Log::debug("GET: QINDIN-API/bancos");
+        
         $bancos = DB::select("SELECT codigo, UPPER(nome) AS nome FROM bancos ORDER BY nome");
+
+        Log::debug('Lista de bancos retornada com sucesso: ', ['bancos' => $bancos->bancos]);
+
         return response()->json(['success'=>true,'bancos'=>$bancos]);
     }
 
     public function userStartConvite(Request $request) {
 
+        Log::debug("POST: QINDIN-API/user/startconvite para: EMAIL: " . $request->email);
+    
         if (!isset($request->termos) && $request->termos != 'true') {
 
+            Log::debug('Não aceitou os termos. Usuário: ', ['email' => $request->email]);
             return response()->json(['success'=>false,'message'=>'É necessário aceitar o Termo de Uso e a Política de Privacidade para criar seu cadastro no Desbankei']);
-
         }
 
         DB::beginTransaction();
 
         if (Usuario::get()->where('cpf',$request->cpf)->first()) {
 
+            Log::debug('Já tem CPF cadastrado no sistema. Usuário: ', ['email' => $request->email]);
             return response()->json(['success'=>false,'message'=>'Este CPF já está cadastrado para um usuário Desbankei, faça o acesso utilizando os dados do mesmo, em caso de dúvidas nos contacte.']);
         }
 
@@ -438,6 +454,8 @@ class UsuarioController extends Controller
         DB::commit();
 
         $json['success'] = true;
+
+        Log::debug('Criado com sucesso. Usuário: ', ['email' => $request->email]);
 
         return response()->json($json);
     }
@@ -654,17 +672,20 @@ class UsuarioController extends Controller
             $request->renda_comprovada = $this->fNum($request->renda_comprovada);
 
             // validar alteração de renda ou vencimento fatura
-            if (isset($request->renda_comprovada) && $logged->renda_comprovada != $request->renda_comprovada) {
-                if (date("U") < date("U",strtotime($logged->limite_renda." +90 days"))) {
-                    return response()->json(['success'=>false,'message'=>'Sua renda só pode ser alterada 90 dias depois do cadastro ou última alteração.']);
+            if (isset($logged->renda_comprovada) && $logged->renda_comprovada > 0) { 
+                if (isset($request->renda_comprovada) && $logged->renda_comprovada != $request->renda_comprovada) {
+                    if (date("U") < date("U",strtotime($logged->limite_renda." +90 days"))) {
+                        return response()->json(['success'=>false,'message'=>'Sua renda só pode ser alterada 90 dias depois do cadastro ou última alteração.']);
+                    }
                 }
-            }
-            if (isset($request->vence_fatura) && $logged->vence_fatura != $request->vence_fatura) {
-                if (date("U") < date("U",strtotime($logged->limite_vence." +90 days"))) {
-                    return response()->json(['success'=>false,'message'=>'O vencimento da fatura só pode ser alterada 90 dias depois do cadastro ou última alteração.']);
-                }
-            }
 
+                if (isset($request->vence_fatura) && $logged->vence_fatura != $request->vence_fatura) {
+                    if (date("U") < date("U",strtotime($logged->limite_vence." +90 days"))) {
+                        return response()->json(['success'=>false,'message'=>'O vencimento da fatura só pode ser alterada 90 dias depois do cadastro ou última alteração.']);
+                    }
+                }
+            }
+            
             $dados = [
                 'profissao'=>$request->profissao,
                 'ocupacao'=>$request->ocupacao,
@@ -716,8 +737,12 @@ class UsuarioController extends Controller
     public function userPassword(Request $request) {
 
         $user = Auth::user();
+
+        Log::debug("POST: QINDIN-API/user/password para ID: " . $user->id . " EMAIL: " . $user->email);
+
         if (isset($request->password)) {
             if (!Hash::check($request->atual_password, $user->password)) {
+                Log::debug("Senha atual incorreta. Usuário ID: " . $user->id . " EMAIL: " . $user->email);
                 return response()->json(['success'=>false,'message'=>'Senha atual está incorreta']);
             }
             if ($request->password == $request->rep_password) {
@@ -726,27 +751,37 @@ class UsuarioController extends Controller
                 ];
                 $msg = 'Senha alterada com sucesso';
             } else {
+                Log::debug("Senha nova e repetir senha são diferentes. Usuário ID: " . $user->id . " EMAIL: " . $user->email);
                 return response()->json(['success'=>false,'message'=>'Senhas nova e repetir senha são diferentes']);
             }
         }
         $user->update($dados);
+        Log::debug("Senha alterada com sucesso. Usuário ID: " . $user->id . " EMAIL: " . $user->email);
         return response()->json(['success'=>true]);
     }
 
     // dashboard app - carregando dados usuário
     public function userHome() {
-
+  
         $user = Auth::user();
+        Log::debug("GET: QINDIN-API/user/home para ID: " . $user->id . " EMAIL: " . $user->email . " STATUS: " . $user->status);
 
+        //Log::debug("Carregando dados do seguinte usuário: ", ['id' => $user->id, 'email' => $user->email, 'status' => $user->status]);
         /*if ($user->status == 1) {
             return response()->json(['success'=>false,'message'=>"Olá! No momento estamos com altas demandas em nossos apps.\n\nPor isso, pedimos desculpas pela inconveniência no envio de seus comprovantes por aqui. Contudo, já providenciamos o crescimento de nosso time e todos nós estamos à postos para tudo voltar ao normal.\n\nEstamos felizes em saber que o número esperado de acessos ultrapassou nossas estimativas.\n\nPara finalizar o seu cadastro, por gentileza, envie os seguintes documentos por e-mail colocando seu CPF e NOME COMPLETO no ASSUNTO:\n\n• Cópia do CPF (frente) + RG (frente e verso) OU CNH (aberta);\n• Comprovante de residência atualizado;\n• Selfie segurando seu documento com foto ao lado do rosto;\n• Extrato bancário dos últimos 12 meses (é por um bom motivo);\n\nDevido à alta demanda, nosso prazo para resposta de análise de crédito é de 3 dias úteis.\n\nAgradecemos pela compreensão. Estamos aqui por você!\n\nNosso e-mail é: contato@desbankei.com.br\n\nConte com a gente!"]);
         }*/
 
         if ($user->status == 5) {
             $motivo = (isset($user->motivo->mensagem)) ? ' - '.$user->motivo->mensagem : '';
+
+            Log::debug("Credito recusado. Usuário: ", ['id' => $user->id, 'email' => $user->email, 'status' => $user->status]);
+
             return response()->json(['success'=>false,'message'=>'Seu crédito foi recusado - '.$motivo,'status'=>$user->status]);
         } else if ($user->status == 4 || $user->status == 7) {
             $motivo = (isset($user->motivo->mensagem)) ? ' - '.$user->motivo->mensagem : '';
+
+            Log::debug("Cadastro bloqueado. Usuário: ", ['id' => $user->id, 'email' => $user->email, 'status' => $user->status]);
+
             return response()->json(['success'=>false,'message'=>'Cadastro bloqueado'.$motivo,'status'=>$user->status]);
         }
 
@@ -816,6 +851,9 @@ class UsuarioController extends Controller
         $user = $user->toArray();
         $pnome = explode(" ",$user['nome_completo']);
         $user['nome_app'] = strtolower($pnome[0]);
+
+        Log::debug("Dados de fatura/parcelas do usuário recuperados com sucesso:", ['id' => $user['id'], 'faturas' => $faturas, 'parcelas' => $parcelas]);
+
         return response()->json(['success'=>true,'user'=>$user,'faturas'=>$faturas,'parcelas'=>$parcelas]);
     }
 
@@ -827,12 +865,18 @@ class UsuarioController extends Controller
 
     // dados rapido usuário
     public function userData(Request $request) {
+
         $arrsexo = [
             'M'=>'Masculino',
             'F'=>'Feminino'
         ];
+        
         $user = Auth::user();
+
+        Log::debug("GET: QINDIN-API/user para ID: " . $user->id . " EMAIL: " . $user->email . " STATUS: " . $user->status);
+
         if ($user->status == 4) {
+            Log::debug("Cadastro bloqueado. Usuário ID: " . $user->id . " EMAIL: " . $user->email . " STATUS: " . $user->status);
             return response()->json(['success'=>false,'message'=>'Cadastro bloqueado']);
         }
         $user->faturas_abertas = $user->faturas()->where('pago',0)->count();
@@ -844,11 +888,16 @@ class UsuarioController extends Controller
             $user = $this->pegaBanco($user);
         }
         if ($request->query('tela') == 'bancario') {
+            Log::debug("GET: QINDIN-API/user -> query('tela')");
             $bancos = DB::select("SELECT codigo, UPPER(nome) AS nome FROM bancos ORDER BY nome");
             $user['bancos'] = $bancos;
             $json = ['success'=>true,'user'=>$user,'bancos'=>$bancos];    
         }
+        
         $json = ['success'=>true,'user'=>$user];
+
+        Log::debug("Registro encontrado e verificado com sucesso. Usuário: ", ['id' => $user->id]);
+
         return response()->json($json);
     }
 
@@ -905,17 +954,24 @@ class UsuarioController extends Controller
     }
 
     public function userAntecipa(Request $request) {
+        
         $user = Auth::user();
+
+        Log::debug("POST: QINDIN-API/user/antecipa para ID: " . $user->id . " EMAIL: " . $user->email);
+
         if ($user->status == 4) {
+            Log::debug("Cadastro bloqueado. Usuário: ", ['id' => $user->id, 'email' => $user->email, 'status' => $user->status]);
             return response()->json(['success'=>false,'message'=>'Cadastro bloqueado']);
         }
         if (!$user->validateForPassportPasswordGrant($request->password)) {
+            Log::debug("Senha inválida. Usuário: ", ['id' => $user->id, 'email' => $user->email, 'status' => $user->status]);
             return response()->json(['success'=>false,'message'=>'Senha inválida! Digite novamente.']);
         }
 
         $fatura = $user->faturas()->find($request->id_fatura);
 
         if ($this->fNum($request->valor_antecipa) > $fatura->valor_total) {
+            Log::debug("Tentativa de antecipar um valor superior ao da fatura. Usuário: ", ['id' => $user->id]);
             return response()->json(['success'=>false,'message'=>'Não é permitido um valor superior ao da fatura']);
         }
 
@@ -927,20 +983,26 @@ class UsuarioController extends Controller
         $fatura->antecipa = 1;
         $fatura->save();
 
-        Mail::to('adiantamento@desbankei.com.br')->send(new LateBill($user,$dados));
-        //Mail::to('suporte@f5webnet.com.br')->send(new LateBill($user,$dados));
+        Mail::to('adiantamento@qindin.com.br')->send(new LateBill($user,$dados));
 
+        Log::debug("Fatura antecipada com sucesso e email enviado. Usuário ID: " . $user->id . " DADOS DA FATURA: " . $dados);
         return response()->json(['success'=>true]);
     }
 
     public function forgotMyPass(Request $request){
+
+        Log::debug("POST: QINDIN-API/senha/redefinir para EMAIL: " . $request->email);
+
         try{
             $email = $request->email;
             $usuario = Usuario::all()->where('email',$email)->first();
+
             if(is_null($usuario)){
+                Log::debug("Não cadastrado tentou pedir email de 'Esqueci minha senha'. Email: ", ['email' => $request->email]);
                 return response()->json(['success'=>false,'message'=>'Usuário não cadastrado']);
             }
             if(is_null($usuario->email)){
+                Log::debug("Email não cadastrado tentou pedir email de 'Esqueci minha senha'. Email: ", ['email' => $request->email]);
                 return response()->json(['success'=>false,'message'=>'Email não cadastrado']);
             }
             $usuario->limite_password = date("Y-m-d H:i:s");
@@ -948,8 +1010,12 @@ class UsuarioController extends Controller
             $usuario->save();
             Mail::to($usuario->email)->send(new ResetPassword($token,$usuario));
         }catch(Throwable $error){
+            Log::error("Erro/Exception ao pedir email de 'Esqueci minha senha'. Usuário: ", ['id' => $usuario->id, 'email' => $request->email]);
+            Log::error("Exception: ", ['exception' => $error]);
             return response()->json(['success'=>false,'message'=>'Erro ao enviar o email']);
         }
+
+        Log::debug("Usuário solicitou o email de 'Esqueci minha senha' com sucesso. Email: ", ['email' => $request->email]);
         return response()->json(['success'=>true,'token'=>$token]);
     }
 

@@ -3,6 +3,8 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
+use Response;
+
 use App\Usuario;
 use App\UsuarioBelvo;
 use App\UsuarioHistorico;
@@ -265,10 +267,11 @@ class AdminController extends Controller
         $curlHandler = curl_init();
 
         curl_setopt_array($curlHandler, [
-            CURLOPT_URL => "https://".env('BELVO_URL')."/api/".$type."/",
+            //CURLOPT_URL => "https://".env('BELVO_URL')."/api/".$type."/",
+            CURLOPT_URL => "https://". "api.belvo.com" ."/api/".$type."/",
             CURLOPT_RETURNTRANSFER => true,
             CURLOPT_HTTPAUTH => CURLAUTH_BASIC,
-            CURLOPT_USERPWD => $userName . ':' . $password,
+            //CURLOPT_USERPWD => $userName . ':' . $password,
             /**
              * Specify POST method
              */
@@ -278,7 +281,9 @@ class AdminController extends Controller
              */
             CURLOPT_HTTPHEADER => [
                 'Content-Type: application/json',
-                'Host: '.env('BELVO_URL'),
+                //'Host: '.env('BELVO_URL'),
+                'Host: '. 'api.belvo.com',
+                'Authorization: Basic ZjM1YmI3NjItYzdjOC00ZDVkLTgwNmEtZDUxZjA5OGFjY2EyOmh6UnRLTDU0QUBldnoyMmhFY2FjOHEjZzZ5UWRZYV9Mamc4WkxmeDlWbnFFS25neU41dHZhU0YqSTRDNHJITGQ='     
             ],
             /**
              * Specify request content
@@ -312,128 +317,8 @@ class AdminController extends Controller
         
         return response()->json(['success'=>true,'data'=>base64_encode($response)]);
     }
-    
-    public function apiRegistroCredito($valor,$valor_tac,$vencimento,$meses,$juros,$usuario,$codSolicitacao) {
-        $curlHandler = curl_init();
-        $userName = env('FIDUCIA_USER');
-        $password = env('FIDUCIA_PASS');
-
-        $postfield = '{
-            "numero_ccb": "40076'.$codSolicitacao.'",
-            "modalidade": "FI",
-            "valor_liberado": '.number_format($valor,2,'.','').',
-            "taxa_juros": '.($juros*100).',
-            "parcelas": '.$meses.',
-            "primeiro_vencimento": "'.$vencimento.'",
-            "periodicidade": "M",
-            "TAC": '.$valor_tac.',
-            "cliente": {
-                "nome_razaosocial": "'.$usuario->nome_completo.'",
-                "tipo_pessoa": "PF",
-                "cpfcnpj": "'.$this->somenteNumeros($usuario->cpf).'",
-                "rg": "'.$this->somenteNumeros($usuario->rg).'",
-                "orgao_rg": "'.$usuario->rg_orgao.'",
-                "UF_rg": "'.mb_strtoupper($usuario->rg_uf).'",
-                "emissao_rg": "'.$this->fData($usuario->rg_dtemissao).'",
-                "inscricao_estadual": null,
-                "nascimento": "'.$this->fData($usuario->data_nascimento).'",
-                "sexo": "'.$usuario->sexo.'",
-                "email": "'.$usuario->email.'",
-                "celular": "'.$usuario->whatsapp.'",
-                "nacionalidade": "'.$usuario->nacionalidade.'",
-                "naturalidade": "'.$usuario->habita_cidade.'",
-                "endereco": {
-                    "logradouro": "'.$usuario->endereco.'",
-                    "numero": "'.$usuario->numero.'",
-                    "complemento": "'.$usuario->complemento.'",
-                    "bairro": "'.$usuario->bairro.'",
-                    "cidade": "'.$usuario->cidade.'",
-                    "UF": "'.$usuario->estado.'",
-                    "CEP": "'.$usuario->cep.'"
-                },
-                "dados_bancarios": {
-                    "agencia": "'.$usuario->agencia.'",
-                    "dig_agencia": null,
-                    "cod_banco": "'.$usuario->banco.'",
-                    "conta": "'.$usuario->numero_conta.'",
-                    "dig_conta": "'.$usuario->dv_conta.'",
-                    "operacao": null,
-                    "cpfcnpj_titular": "'.$this->somenteNumeros($usuario->cpf).'",
-                    "tipo": "CC"
-                }
-            }
-        }';
-
-        // $usuario->nacionalidade != NULL && $usuario->habita_cidade != NULL &&
-        if ($codSolicitacao != NULL && $valor != NULL && $juros != NULL && $meses != NULL && $vencimento != NULL && $valor_tac != NULL && $usuario->nome_completo != NULL && $usuario->cpf != NULL && $usuario->rg != NULL && $usuario->rg_orgao != NULL && $usuario->rg_uf != NULL && $usuario->rg_dtemissao != NULL && $usuario->data_nascimento != NULL && $usuario->sexo != NULL && $usuario->email != NULL && $usuario->whatsapp != NULL && $usuario->endereco != NULL && $usuario->numero != NULL && $usuario->bairro != NULL && $usuario->cidade != NULL && $usuario->estado != NULL && $usuario->cep != NULL && $usuario->agencia != NULL && $usuario->banco != NULL && $usuario->numero_conta != NULL && $usuario->cpf != NULL) {
-        } else {
-            $usuario->historicos()->create([
-                'id_acao_historico'=>10,
-                'descricao'=>$postfield,
-                'valor'=>null,
-                'datahora'=>date("Y-m-d H:i:s"),
-            ]);
-            return ['success'=>false,'message'=>'Dados Incompletos'];
-        }
-
-        curl_setopt_array($curlHandler, [
-            CURLOPT_URL => env('FIDUCIA_URL_IMPORTAR','https://api.bancarizacao.fiducia.digital/api/v1/bancarizacao/importar'),
-            CURLOPT_RETURNTRANSFER => true,
-            CURLOPT_HTTPAUTH => CURLAUTH_BASIC,
-            CURLOPT_USERPWD => $userName . ':' . $password,
-            /**
-             * Specify POST method
-             */
-            CURLOPT_POST => true,
-            /**
-             * Specify request headers
-             */
-            CURLOPT_HTTPHEADER => [
-                'user: '.env('FIDUCIA_HEADER')
-            ],
-            /**
-             * Specify request content
-             */
-            CURLOPT_POSTFIELDS => $postfield,
-            CURLOPT_FAILONERROR=>true,
-        ]);
- 
-        $response = '';
-        $response = curl_exec($curlHandler);
-        if (curl_errno($curlHandler)) {
-            $response .= curl_error($ch);
-        }
-        curl_close($curlHandler);
-        $aresponse = json_decode($response,1);
-
-        $usuario->historicos()->create([
-            'id_acao_historico'=>10,
-            'descricao'=>$postfield,
-            'valor'=>$response,
-            'datahora'=>date("Y-m-d H:i:s"),
-        ]);
-
-        if ($aresponse['status']=='sucesso') {
-            // atualizar parcela se necessário
-            $sol = SolicitacaoParcelamento::find($codSolicitacao);
-            if ($sol->valor_parcela != $aresponse['resposta']['valores']['valor_parcela']) {
-                $sol->valor_parcela = $aresponse['resposta']['valores']['valor_parcela'];
-                $sol->save();
-            }
-            $parcelas = $sol->parcelaFatura()->get();
-            if ($parcelas && !env('FIDUCIA_HOMOLOG')) {
-                foreach($parcelas as $parcela) {
-                    $this->recalculaFatura($parcela->id_fatura);
-                }
-            }
-
-            return ['success'=>true,'operacao'=>$aresponse['resposta']['operacao']['operacao']];
-        } else {
-            return ['success'=>false,'message'=>'Retorno: '.$response];
-        }
-    }
-
-    public function apiDocumentosFiducia($usuario, $operacaoId, $creditoId) {
+  
+  public function apiDocumentosFiducia($usuario, $operacaoId, $creditoId) {
         $docTotal = $usuario->documentos()->where(function($qq) use ($creditoId) {
             $qq->whereDoesntHave('documento_fiducia', function($q) use ($creditoId) {
                 $q->where('id_solicitacao_parcelamento',$creditoId);
@@ -506,9 +391,11 @@ class AdminController extends Controller
 
                 curl_setopt_array($curlHandler, [
                     CURLOPT_URL => env('FIDUCIA_URL_DOCUMENTOS','https://api.bancarizacao.fiducia.digital/api/v1/bancarizacao/documentos'),
+                    //CURLOPT_URL => 'https://2fe2-2804-14d-90a8-83d3-f9ec-e475-233c-7acd.ngrok.io/bankinghardwall/api/v1/bancarizacao/documentos',
+                  
                     CURLOPT_RETURNTRANSFER => true,
                     CURLOPT_HTTPAUTH => CURLAUTH_BASIC,
-                    CURLOPT_USERPWD => $userName . ':' . $password,
+                    //CURLOPT_USERPWD => $userName . ':' . $password, -> base64 para o header basic token
                     /**
                      * Specify POST method
                      */
@@ -517,7 +404,9 @@ class AdminController extends Controller
                      * Specify request headers
                      */
                     CURLOPT_HTTPHEADER => [
-                        'user: '.env('FIDUCIA_HEADER')
+                        'Authorization: Basic UUlORElOOnRBclN4cThV',
+                        //'User: '.env('FIDUCIA_HEADER')
+                        'User: 40076375000150'
                     ],
                     /**
                      * Specify request content
@@ -550,6 +439,138 @@ class AdminController extends Controller
         }
         return ['success'=>false,'message'=>$response];
     }
+    
+    public function apiRegistroCredito($valor,$valor_tac,$vencimento,$meses,$juros,$usuario,$codSolicitacao) {
+        $curlHandler = curl_init();
+        $userName = env('FIDUCIA_USER');
+        $password = env('FIDUCIA_PASS');
+
+        $postfield = '{
+            "numero_ccb": "40076'.$codSolicitacao.'",
+            "modalidade": "FI",
+            "valor_liberado": '.number_format($valor,2,'.','').',
+            "taxa_juros": '.($juros*100).',
+            "parcelas": '.$meses.',
+            "primeiro_vencimento": "'.$vencimento.'",
+            "periodicidade": "M",
+            "TAC": '.$valor_tac.',
+            "cliente": {
+                "nome_razaosocial": "'.$usuario->nome_completo.'",
+                "tipo_pessoa": "PF",
+                "cpfcnpj": "'.$this->somenteNumeros($usuario->cpf).'",
+                "rg": "'.$this->somenteNumeros($usuario->rg).'",
+                "orgao_rg": "'.$usuario->rg_orgao.'",
+                "UF_rg": "'.mb_strtoupper($usuario->rg_uf).'",
+                "emissao_rg": "'.$this->fData($usuario->rg_dtemissao).'",
+                "inscricao_estadual": null,
+                "nascimento": "'.$this->fData($usuario->data_nascimento).'",
+                "sexo": "'.$usuario->sexo.'",
+                "email": "'.$usuario->email.'",
+                "celular": "'.$usuario->whatsapp.'",
+                "nacionalidade": "'.$usuario->nacionalidade.'",
+                "naturalidade": "'.$usuario->habita_cidade.'",
+                "endereco": {
+                    "logradouro": "'.$usuario->endereco.'",
+                    "numero": "'.$usuario->numero.'",
+                    "complemento": "'.$usuario->complemento.'",
+                    "bairro": "'.$usuario->bairro.'",
+                    "cidade": "'.$usuario->cidade.'",
+                    "UF": "'.$usuario->estado.'",
+                    "CEP": "'.$usuario->cep.'"
+                },
+                "dados_bancarios": {
+                    "agencia": "'.$usuario->agencia.'",
+                    "dig_agencia": null,
+                    "cod_banco": "'.$usuario->banco.'",
+                    "conta": "'.$usuario->numero_conta.'",
+                    "dig_conta": "'.$usuario->dv_conta.'",
+                    "operacao": null,
+                    "cpfcnpj_titular": "'.$this->somenteNumeros($usuario->cpf).'",
+                    "tipo": "CC"
+                }
+            }
+        }';
+
+        // $usuario->nacionalidade != NULL && $usuario->habita_cidade != NULL &&
+        if ($codSolicitacao != NULL && $valor != NULL && $juros != NULL && $meses != NULL && $vencimento != NULL && $valor_tac != NULL && $usuario->nome_completo != NULL && $usuario->cpf != NULL && $usuario->rg != NULL && $usuario->rg_orgao != NULL && $usuario->rg_uf != NULL && $usuario->rg_dtemissao != NULL && $usuario->data_nascimento != NULL && $usuario->sexo != NULL && $usuario->email != NULL && $usuario->whatsapp != NULL && $usuario->endereco != NULL && $usuario->numero != NULL && $usuario->bairro != NULL && $usuario->cidade != NULL && $usuario->estado != NULL && $usuario->cep != NULL && $usuario->agencia != NULL && $usuario->banco != NULL && $usuario->numero_conta != NULL && $usuario->cpf != NULL) {
+        } else {
+            $usuario->historicos()->create([
+                'id_acao_historico'=>10,
+                'descricao'=>$postfield,
+                'valor'=>null,
+                'datahora'=>date("Y-m-d H:i:s"),
+            ]);
+            return ['success'=>false,'message'=>'Dados Incompletos'];
+        }
+
+        curl_setopt_array($curlHandler, [
+            CURLOPT_URL => env('FIDUCIA_URL_IMPORTAR','https://api.bancarizacao.fiducia.digital/api/v1/bancarizacao/importar'),
+            //CURLOPT_URL => 'https://2fe2-2804-14d-90a8-83d3-f9ec-e475-233c-7acd.ngrok.io/bankinghardwall/api/v1/bancarizacao/importar',
+          
+            CURLOPT_RETURNTRANSFER => true,
+            CURLOPT_HTTPAUTH => CURLAUTH_BASIC,
+            //CURLOPT_USERPWD => $userName . ':' . $password,
+            
+            //CURLOPT_USERPWD => 'QINDIN' . ':' . 'tArSxq8U',
+            /**
+             * Specify POST method
+             */
+            CURLOPT_POST => true,
+            /**
+             * Specify request headers
+             */
+            CURLOPT_HTTPHEADER => [
+                'Authorization: Basic UUlORElOOnRBclN4cThV',
+                //'User: '.env('FIDUCIA_HEADER')
+                'User: 40076375000150'
+            ],
+            /**
+             * Specify request content
+             */
+            CURLOPT_POSTFIELDS => $postfield,
+            CURLOPT_FAILONERROR=>true,
+        ]);
+ 
+        $response = '';
+        $response = curl_exec($curlHandler);
+        if (curl_errno($curlHandler)) {
+            $response .= curl_error($curlHandler);
+            $http_code = curl_getinfo($curlHandler, CURLINFO_HTTP_CODE);
+            $header_size = curl_getinfo($curlHandler, CURLINFO_HEADER_SIZE);
+            $header = substr($response, 0, $header_size);
+            $body = substr($response, $header_size);
+        }
+        curl_close($curlHandler);
+        $aresponse = json_decode($response,1);
+
+        $usuario->historicos()->create([
+            'id_acao_historico'=>10,
+            'descricao'=>$postfield,
+            'valor'=>$response,
+            'datahora'=>date("Y-m-d H:i:s"),
+        ]);
+
+        if ($aresponse['status']=='sucesso') {
+            // atualizar parcela se necessário
+            $sol = SolicitacaoParcelamento::find($codSolicitacao);
+            if ($sol->valor_parcela != $aresponse['resposta']['valores']['valor_parcela']) {
+                $sol->valor_parcela = $aresponse['resposta']['valores']['valor_parcela'];
+                $sol->save();
+            }
+            $parcelas = $sol->parcelaFatura()->get();
+            if ($parcelas && !env('FIDUCIA_HOMOLOG')) {
+                foreach($parcelas as $parcela) {
+                    $this->recalculaFatura($parcela->id_fatura);
+                }
+            }
+
+            return ['success'=>true,'operacao'=>$aresponse['resposta']['operacao']['operacao']];
+        } else {
+            return ['success'=>false,'message'=>'Retorno: '. $response . ' HTTP_CODE: ' . $http_code . ' header: ' . $header .
+        ' body: ' . $body . ' user: ' . $userName . ' pwd: ' . $password];
+        }
+    }
+
 
     public function importaCredito(Request $request) {
         $usuario = Usuario::find($request->id_cliente);
@@ -595,7 +616,10 @@ class AdminController extends Controller
                     if (isset($regCredito['message'])) {
                         $msg = ' - '.$regCredito['message'];
                     }
-                    return response()->json(['success'=>false,'message'=>'Erro ao importar crédito - Processo inicial'.$msg]);
+                    return response()->json(['success'=>false,'message'=>'Erro ao importar crédito - Processo inicial. Retorno da API: '. $msg,
+                    'payload'=>'credito->valor solicitado: ' . $credito->valor_solicitado . ' $credito->valor_tac: ' . $credito->valor_tac
+                    . ' $credito->primeira_parcela: ' . $credito->primeira_parcela . ' $credito->parcelas: ' . $credito->parcelas . ' $credito->taxa_juros: ' .  $credito->taxa_juros
+                    . ' $credito->id: ' . $credito->id]);
                 }
             }
         }
@@ -683,7 +707,15 @@ class AdminController extends Controller
     	return view('clientes',compact('nomeTela','columns','combos','total','mtotal','totp'));
     }
 
-    public function pegaClientes(Request $request,$total=0) {
+    public function importaFaturas() {
+
+        $faturas = Fatura::all();
+        $quick = DataTables::of($faturas);
+
+        return $quick->make(true);
+    }
+
+    public function pegaClientes($total=0) {
         $usuarios = Usuario::with('fatura')->withCount(['parcelamentos as fiducia'=>function($query){
             $query->whereNull('fiducia_geral');
         }])->where('status','!=',7);
@@ -748,6 +780,153 @@ class AdminController extends Controller
             }
         });
         return $quick->make(true);
+    }
+
+    /**
+     * Exporta a tabela de faturas integralmente.
+     */
+    public function exportFaturasCsv() {
+
+        $faturas = $this->importaFaturas();
+
+        $filename = "FATURAS.csv";
+        header("Content-disposition: attachment; filename=".$filename);
+        header("Content-Type: text/csv");
+        $headers = array("ID", "VALOR TOTAL", "FECHAMENTO", "VENCIMENTO", "DATA PAGAMENTO", "ANOMES", "MAX PARCELAS", "REG DATE",  "FECHADO", "PAGO", "ANTECIPA", "URL", "DIGITOS", "STATUS", "CRIADO EM", "ATUALIZADO EM", "EXCLUÍDO EM", "ID USUÁRIO");
+        $fp = fopen($filename, 'w');
+
+        $my_var_faturas = $faturas->getData();        
+
+        if ($my_var_faturas === NULL) { 
+            
+            return response()->json(['success'=>false]);
+        }
+
+        fputcsv($fp, $headers);
+
+        for($rowCount = 0; $rowCount < $my_var_faturas->recordsTotal; $rowCount++) {
+
+            //$status_fatura = $this->statusFaturaPorIdentificador($my_var_clientes->data[$rowCount]->status_fatura);
+            //$status = $this->statusClientePorIdentificador($my_var_clientes->data[$rowCount]->status);
+
+            $row = array($my_var_faturas->data[$rowCount]->id, 
+                            $my_var_faturas->data[$rowCount]->valor_total, 
+                            $my_var_faturas->data[$rowCount]->fechamento,
+                            $my_var_faturas->data[$rowCount]->vencimento,
+                            $my_var_faturas->data[$rowCount]->dtpagamento,
+                            $my_var_faturas->data[$rowCount]->anomes,
+                            $my_var_faturas->data[$rowCount]->maxparcelas,
+                            $my_var_faturas->data[$rowCount]->reg_date,
+                            $my_var_faturas->data[$rowCount]->fechado,
+                            $my_var_faturas->data[$rowCount]->pago,
+                            $my_var_faturas->data[$rowCount]->antecipa,
+                            $my_var_faturas->data[$rowCount]->url,
+                            $my_var_faturas->data[$rowCount]->digitos,
+                            $my_var_faturas->data[$rowCount]->status,
+                            $my_var_faturas->data[$rowCount]->created_at,
+                            $my_var_faturas->data[$rowCount]->updated_at,
+                            $my_var_faturas->data[$rowCount]->deleted_at,
+                            $my_var_faturas->data[$rowCount]->id_usuario
+                            );
+            fputcsv($fp, $row, ',');
+        }
+
+        fclose($fp);
+        
+        return response()->json(['success'=>true]);
+    }
+
+    /**
+     * Exporta a lista completa de usuários da nossa tabela Usuário para CSV. Se aproveitando do método já existente que a grid do Painel Admin usa.
+     */
+    public function exportClientesCsv() {
+
+        $meusClientesGrid = $this->pegaClientes(null);
+        $filename = "CLIENTES.csv";
+        header("Content-disposition: attachment; filename=".$filename);
+        header("Content-Type: text/csv");
+
+        //$fp = fopen($filename, 'php://output', 'w');
+        $fp = fopen($filename, 'w');
+        
+        $headers = array("ID", "NOME COMPLETO", "CPF", "EMAIL", "WHATSAPP", "DATA NASCIMENTO", "STATUS FATURA",  "SITUAÇÃO CADASTRO");
+        
+
+        $my_var_clientes = $meusClientesGrid->getData();
+
+        if ($my_var_clientes === NULL) { 
+            
+            return response()->json(['success'=>false]);
+        }
+        
+        /*var_dump($my_var_clientes->recordsTotal);
+        var_dump($my_var_clientes->data[0]->id);
+        var_dump($my_var_clientes->data[0]->nome_completo);
+        var_dump($my_var_clientes->data[0]->cpf);
+        var_dump($my_var_clientes->data[0]->email);
+        var_dump($my_var_clientes->data[0]->whatsapp);
+        var_dump($my_var_clientes->data[0]->status_fatura);
+        var_dump($my_var_clientes->data[0]->status);*/
+
+        fputcsv($fp, $headers);
+
+        for($rowCount = 0; $rowCount < $my_var_clientes->recordsTotal; $rowCount++) {
+
+            $status_fatura = $this->statusFaturaPorIdentificador($my_var_clientes->data[$rowCount]->status_fatura);
+            $status = $this->statusClientePorIdentificador($my_var_clientes->data[$rowCount]->status);
+
+            $row = array($my_var_clientes->data[$rowCount]->id, 
+                            $my_var_clientes->data[$rowCount]->nome_completo, 
+                            $my_var_clientes->data[$rowCount]->cpf,
+                            $my_var_clientes->data[$rowCount]->email,
+                            $my_var_clientes->data[$rowCount]->whatsapp,
+                            $my_var_clientes->data[$rowCount]->data_nascimento,
+                            $status_fatura,
+                            $status);
+            fputcsv($fp, $row, ',');
+        }
+
+        fclose($fp);
+        //return $this->getDownload($filename);
+        return response()->json(['success'=>true]); 
+    }
+
+    public function getDownload($filename){
+
+        $file = public_path(). "\\" .$filename;
+        $headers = array('Content-Type: text/csv',);
+
+        var_dump($file);
+        var_dump($filename);
+        var_dump($headers);
+
+        //return response()->download($file, $filename, $headers, 'attachment');
+        return Response::download($file, $filename, $headers);
+    }
+
+    public function statusFaturaPorIdentificador($idStatusFatura) {
+        
+        switch($idStatusFatura) {
+
+            case 1 : return "Fatura Fechada"; break;
+            case 2 : return "Fatura Emitida"; break;
+            case 3 : return "Fatura Atrasada"; break;
+            case 4 : return "Fatura Paga"; break;
+            case 5 : return "Fatura Aberta"; break;
+          }
+    }
+
+    public function statusClientePorIdentificador($idStatus) {
+
+        switch($idStatus) {
+
+            case 1 : return "Pendente Documentação"; break;
+            case 2 : return "Análise Documentação"; break;
+            case 3 : return "Cadastro Completo"; break;
+            case 4 : return "Cadastro Bloqueado"; break;
+            case 5 : return "Recusa de Crédito"; break;
+            case 6 : return "Bloqueio Falta Pgto"; break;
+          }
     }
 
     public function perguntas() {
