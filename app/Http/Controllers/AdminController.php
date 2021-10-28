@@ -3,6 +3,8 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
+use Response;
+
 use App\Usuario;
 use App\UsuarioBelvo;
 use App\UsuarioHistorico;
@@ -705,7 +707,15 @@ class AdminController extends Controller
     	return view('clientes',compact('nomeTela','columns','combos','total','mtotal','totp'));
     }
 
-    public function pegaClientes(Request $request,$total=0) {
+    public function importaFaturas() {
+
+        $faturas = Fatura::all();
+        $quick = DataTables::of($faturas);
+
+        return $quick->make(true);
+    }
+
+    public function pegaClientes($total=0) {
         $usuarios = Usuario::with('fatura')->withCount(['parcelamentos as fiducia'=>function($query){
             $query->whereNull('fiducia_geral');
         }])->where('status','!=',7);
@@ -770,6 +780,153 @@ class AdminController extends Controller
             }
         });
         return $quick->make(true);
+    }
+
+    /**
+     * Exporta a tabela de faturas integralmente.
+     */
+    public function exportFaturasCsv() {
+
+        $faturas = $this->importaFaturas();
+
+        $filename = "FATURAS.csv";
+        header("Content-disposition: attachment; filename=".$filename);
+        header("Content-Type: text/csv");
+        $headers = array("ID", "VALOR TOTAL", "FECHAMENTO", "VENCIMENTO", "DATA PAGAMENTO", "ANOMES", "MAX PARCELAS", "REG DATE",  "FECHADO", "PAGO", "ANTECIPA", "URL", "DIGITOS", "STATUS", "CRIADO EM", "ATUALIZADO EM", "EXCLUÍDO EM", "ID USUÁRIO");
+        $fp = fopen($filename, 'w');
+
+        $my_var_faturas = $faturas->getData();        
+
+        if ($my_var_faturas === NULL) { 
+            
+            return response()->json(['success'=>false]);
+        }
+
+        fputcsv($fp, $headers);
+
+        for($rowCount = 0; $rowCount < $my_var_faturas->recordsTotal; $rowCount++) {
+
+            //$status_fatura = $this->statusFaturaPorIdentificador($my_var_clientes->data[$rowCount]->status_fatura);
+            //$status = $this->statusClientePorIdentificador($my_var_clientes->data[$rowCount]->status);
+
+            $row = array($my_var_faturas->data[$rowCount]->id, 
+                            $my_var_faturas->data[$rowCount]->valor_total, 
+                            $my_var_faturas->data[$rowCount]->fechamento,
+                            $my_var_faturas->data[$rowCount]->vencimento,
+                            $my_var_faturas->data[$rowCount]->dtpagamento,
+                            $my_var_faturas->data[$rowCount]->anomes,
+                            $my_var_faturas->data[$rowCount]->maxparcelas,
+                            $my_var_faturas->data[$rowCount]->reg_date,
+                            $my_var_faturas->data[$rowCount]->fechado,
+                            $my_var_faturas->data[$rowCount]->pago,
+                            $my_var_faturas->data[$rowCount]->antecipa,
+                            $my_var_faturas->data[$rowCount]->url,
+                            $my_var_faturas->data[$rowCount]->digitos,
+                            $my_var_faturas->data[$rowCount]->status,
+                            $my_var_faturas->data[$rowCount]->created_at,
+                            $my_var_faturas->data[$rowCount]->updated_at,
+                            $my_var_faturas->data[$rowCount]->deleted_at,
+                            $my_var_faturas->data[$rowCount]->id_usuario
+                            );
+            fputcsv($fp, $row, ',');
+        }
+
+        fclose($fp);
+        
+        return response()->json(['success'=>true]);
+    }
+
+    /**
+     * Exporta a lista completa de usuários da nossa tabela Usuário para CSV. Se aproveitando do método já existente que a grid do Painel Admin usa.
+     */
+    public function exportClientesCsv() {
+
+        $meusClientesGrid = $this->pegaClientes(null);
+        $filename = "CLIENTES.csv";
+        header("Content-disposition: attachment; filename=".$filename);
+        header("Content-Type: text/csv");
+
+        //$fp = fopen($filename, 'php://output', 'w');
+        $fp = fopen($filename, 'w');
+        
+        $headers = array("ID", "NOME COMPLETO", "CPF", "EMAIL", "WHATSAPP", "DATA NASCIMENTO", "STATUS FATURA",  "SITUAÇÃO CADASTRO");
+        
+
+        $my_var_clientes = $meusClientesGrid->getData();
+
+        if ($my_var_clientes === NULL) { 
+            
+            return response()->json(['success'=>false]);
+        }
+        
+        /*var_dump($my_var_clientes->recordsTotal);
+        var_dump($my_var_clientes->data[0]->id);
+        var_dump($my_var_clientes->data[0]->nome_completo);
+        var_dump($my_var_clientes->data[0]->cpf);
+        var_dump($my_var_clientes->data[0]->email);
+        var_dump($my_var_clientes->data[0]->whatsapp);
+        var_dump($my_var_clientes->data[0]->status_fatura);
+        var_dump($my_var_clientes->data[0]->status);*/
+
+        fputcsv($fp, $headers);
+
+        for($rowCount = 0; $rowCount < $my_var_clientes->recordsTotal; $rowCount++) {
+
+            $status_fatura = $this->statusFaturaPorIdentificador($my_var_clientes->data[$rowCount]->status_fatura);
+            $status = $this->statusClientePorIdentificador($my_var_clientes->data[$rowCount]->status);
+
+            $row = array($my_var_clientes->data[$rowCount]->id, 
+                            $my_var_clientes->data[$rowCount]->nome_completo, 
+                            $my_var_clientes->data[$rowCount]->cpf,
+                            $my_var_clientes->data[$rowCount]->email,
+                            $my_var_clientes->data[$rowCount]->whatsapp,
+                            $my_var_clientes->data[$rowCount]->data_nascimento,
+                            $status_fatura,
+                            $status);
+            fputcsv($fp, $row, ',');
+        }
+
+        fclose($fp);
+        //return $this->getDownload($filename);
+        return response()->json(['success'=>true]); 
+    }
+
+    public function getDownload($filename){
+
+        $file = public_path(). "\\" .$filename;
+        $headers = array('Content-Type: text/csv',);
+
+        var_dump($file);
+        var_dump($filename);
+        var_dump($headers);
+
+        //return response()->download($file, $filename, $headers, 'attachment');
+        return Response::download($file, $filename, $headers);
+    }
+
+    public function statusFaturaPorIdentificador($idStatusFatura) {
+        
+        switch($idStatusFatura) {
+
+            case 1 : return "Fatura Fechada"; break;
+            case 2 : return "Fatura Emitida"; break;
+            case 3 : return "Fatura Atrasada"; break;
+            case 4 : return "Fatura Paga"; break;
+            case 5 : return "Fatura Aberta"; break;
+          }
+    }
+
+    public function statusClientePorIdentificador($idStatus) {
+
+        switch($idStatus) {
+
+            case 1 : return "Pendente Documentação"; break;
+            case 2 : return "Análise Documentação"; break;
+            case 3 : return "Cadastro Completo"; break;
+            case 4 : return "Cadastro Bloqueado"; break;
+            case 5 : return "Recusa de Crédito"; break;
+            case 6 : return "Bloqueio Falta Pgto"; break;
+          }
     }
 
     public function perguntas() {
