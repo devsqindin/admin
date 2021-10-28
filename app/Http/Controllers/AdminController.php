@@ -779,6 +779,7 @@ class AdminController extends Controller
                 default:
             }
         });
+        // teste will
         return $quick->make(true);
     }
 
