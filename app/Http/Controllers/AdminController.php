@@ -2079,6 +2079,7 @@ class AdminController extends Controller
         }
         $usuario->limite_utilizado = $limiteSolicitado - $limiteRecuperado;
         $usuario->limite_disponivel = $limiteInicial - $usuario->limite_utilizado;
+        // 10.000 - 90.
         $usuario->save();
     }
     public function marcarFatura(Request $request) {
@@ -2093,14 +2094,14 @@ class AdminController extends Controller
                 if ($parcela->pago == 1) {
                     if ($parcela->parcela_type == 'App\SolicitacaoParcelamento') {
                         $this->recalculaLimites($usuario);
-                        $usuario->limite_disponivel = $usuario->limite_disponivel + $parcela->parcela->valor_parcela;
-                        $usuario->save();
+                        //$usuario->limite_disponivel = $usuario->limite_disponivel + $parcela->parcela->valor_parcela;
+                        //$usuario->save();
                     }
                 } else {
                     if ($parcela->parcela_type == 'App\SolicitacaoParcelamento') {
                         $this->recalculaLimites($usuario);
-                        $usuario->limite_disponivel = $usuario->limite_disponivel - $parcela->parcela->valor_parcela;
-                        $usuario->save();
+                        //$usuario->limite_disponivel = $usuario->limite_disponivel - $parcela->parcela->valor_parcela;
+                        //$usuario->save();
                     }
                 }
             }
