@@ -7,6 +7,31 @@
 <a href="https://packagist.org/packages/laravel/framework"><img src="https://poser.pugx.org/laravel/framework/license.svg" alt="License"></a>
 </p>
 
+## Troubleshooting
+Problema: No endpoint api/login estar recebendo o erro:
+LogicException: Key path &quot;file://D:\xampp\htdocs\api-qindin\storage\oauth-private.key&quot; does not exist or is not readable in file D:\xampp\htdocs\api-qindin\vendor\league\oauth2-server\src\CryptKey.php on line 52
+Solução:
+Se a instalação do Passport não tiver sido instalada ainda:
+composer require laravel/passport 
+Register the service provider inside config/app.php
+Laravel\Passport\PassportServiceProvider::class
+
+Run the migrations
+php artisan migrate
+
+Lastly generate the keys using
+php artisan passport:install
+
+Problema: 500 Server Error ao acessar o projeto (URL de login)
+Solução: Verificar se o arquivo .env esta na raíz do projeto.
+
+Problema: Após rodar no diretório o "php artisan config:cache", o arquivo .env para de funcionar para forneceder variáveis ao sistema. 
+Solução: Para concertar isso rode: "php artisan config:clear".
+
+Problema: Ao tentar rodar o projeto com php artisan serve, recebemos o seguinte erro no console:  "No Application Encryption Key Has Been Specified". 
+Solução: Para concertar isso rodar: php artisan key:generate
+
+
 ## About Laravel
 
 Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
