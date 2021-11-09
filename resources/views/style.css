@@ -45,7 +45,7 @@
 .info {
 	width: 60%;
     height: 100vh;
-    background: url(../img/bkg.jpg);
+    background: url(../views/img/bkg.png);
     float: right;
     background-size: cover;
     background-repeat: no-repeat;
