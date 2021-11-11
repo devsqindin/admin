@@ -39,6 +39,8 @@ use URL;
 use Image;
 use Carbon\Carbon;
 use Illuminate\Contracts\Encryption\DecryptException;
+use Illuminate\Support\Facades\Log;
+
 
 class AdminController extends Controller
 {
@@ -64,7 +66,10 @@ class AdminController extends Controller
     }
 
     public function login() {
-        return view('login');
+        if (Auth()->user())
+            return redirect()->intended(route('admin.clientes'));
+        else
+            return view('login');
     }
 
     public function logout(Request $request) {
