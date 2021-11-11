@@ -316,7 +316,7 @@ class UsuarioController extends Controller
         if (!isset($request->termos) && $request->termos != 'true') {
 
             Log::debug('Não aceitou os termos. Usuário: ', ['email' => $request->email]);
-            return response()->json(['success'=>false,'message'=>'É necessário aceitar o Termo de Uso e a Política de Privacidade para criar seu cadastro no Desbankei']);
+            return response()->json(['success'=>false,'message'=>'É necessário aceitar o Termo de Uso e a Política de Privacidade para criar seu cadastro na Qindin']);
         }
 
         DB::beginTransaction();
@@ -324,7 +324,7 @@ class UsuarioController extends Controller
         if (Usuario::get()->where('cpf',$request->cpf)->first()) {
 
             Log::debug('Já tem CPF cadastrado no sistema. Usuário: ', ['email' => $request->email]);
-            return response()->json(['success'=>false,'message'=>'Este CPF já está cadastrado para um usuário Desbankei, faça o acesso utilizando os dados do mesmo, em caso de dúvidas nos contacte.']);
+            return response()->json(['success'=>false,'message'=>'Este CPF já está cadastrado para um usuário Qindin, faça o acesso utilizando os dados do mesmo, em caso de dúvidas nos contacte.']);
         }
 
         $date = date_create('NOW');
@@ -472,13 +472,13 @@ class UsuarioController extends Controller
                 return response()->json(['success'=>false,'message'=>'Senhas digitadas não conferem']);
             }
             if (!isset($request->aceito) && $request->aceito != 'S') {
-                return response()->json(['success'=>false,'message'=>'É necessário aceitar o Termo de Uso e a Política de Privacidade para criar seu cadastro no Desbankei']);
+                return response()->json(['success'=>false,'message'=>'É necessário aceitar o Termo de Uso e a Política de Privacidade para criar seu cadastro na Qindin']);
             }
 
             DB::beginTransaction();
 
             if (Usuario::get()->where('cpf',$request->cpf)->first()) {
-                return response()->json(['success'=>false,'message'=>'Este CPF já está cadastrado para um usuário Desbankei, faça o acesso utilizando os dados do mesmo, em caso de dúvidas nos contacte.']);
+                return response()->json(['success'=>false,'message'=>'Este CPF já está cadastrado para um usuário Qindin, faça o acesso utilizando os dados do mesmo, em caso de dúvidas nos contacte.']);
             }
             $user = Usuario::create([
                 'nome_completo'=>$request->nome_completo,
@@ -514,7 +514,7 @@ class UsuarioController extends Controller
         $user = Usuario::find($userId);
         if ($etapa == 1) {
             if (Usuario::get()->where('cpf',$request->cpf)->first()) {
-                return response()->json(['success'=>false,'message'=>'Este CPF já está cadastrado para um usuário Desbankei, faça o acesso utilizando os dados do mesmo, em caso de dúvidas nos contacte.']);
+                return response()->json(['success'=>false,'message'=>'Este CPF já está cadastrado para um usuário Qindin, faça o acesso utilizando os dados do mesmo, em caso de dúvidas nos contacte.']);
             }
             $dados = [
                 'cpf'=>trim($request->cpf),
