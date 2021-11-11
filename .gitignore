@@ -9,6 +9,8 @@
 # Node artifact files
 node_modules/
 
+storage/app/
+
 # Compiled Java class files
 *.class
 

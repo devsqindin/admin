@@ -39,6 +39,8 @@ use URL;
 use Image;
 use Carbon\Carbon;
 use Illuminate\Contracts\Encryption\DecryptException;
+use Illuminate\Support\Facades\Log;
+
 
 class AdminController extends Controller
 {
@@ -64,7 +66,10 @@ class AdminController extends Controller
     }
 
     public function login() {
-        return view('login');
+        if (Auth()->user())
+            return redirect()->intended(route('admin.clientes'));
+        else
+            return view('login');
     }
 
     public function logout(Request $request) {
@@ -779,6 +784,7 @@ class AdminController extends Controller
                 default:
             }
         });
+        
         return $quick->make(true);
     }
 
@@ -2078,6 +2084,7 @@ class AdminController extends Controller
         }
         $usuario->limite_utilizado = $limiteSolicitado - $limiteRecuperado;
         $usuario->limite_disponivel = $limiteInicial - $usuario->limite_utilizado;
+        // 10.000 - 90.
         $usuario->save();
     }
     public function marcarFatura(Request $request) {
@@ -2092,14 +2099,14 @@ class AdminController extends Controller
                 if ($parcela->pago == 1) {
                     if ($parcela->parcela_type == 'App\SolicitacaoParcelamento') {
                         $this->recalculaLimites($usuario);
-                        $usuario->limite_disponivel = $usuario->limite_disponivel + $parcela->parcela->valor_parcela;
-                        $usuario->save();
+                        //$usuario->limite_disponivel = $usuario->limite_disponivel + $parcela->parcela->valor_parcela;
+                        //$usuario->save();
                     }
                 } else {
                     if ($parcela->parcela_type == 'App\SolicitacaoParcelamento') {
                         $this->recalculaLimites($usuario);
-                        $usuario->limite_disponivel = $usuario->limite_disponivel - $parcela->parcela->valor_parcela;
-                        $usuario->save();
+                        //$usuario->limite_disponivel = $usuario->limite_disponivel - $parcela->parcela->valor_parcela;
+                        //$usuario->save();
                     }
                 }
             }
