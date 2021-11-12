@@ -1059,7 +1059,7 @@ $(function(){
           @if(Auth()->user()->temPermissao('cadastro','acesso'))
           <div class="tab-pane" id="cadastro">
               {{-- <div id="divAceiteCadastro" class="jumbotron" style="padding:2rem;display:none;">
-                <h4>Este cadastro ainda não foi autorizado para uso do Desbankei</h4>
+                <h4>Este cadastro ainda não foi autorizado para uso da Qindin</h4>
                 <button type="button" class="btn btn-success" onclick="$.aceiteCadastro('S')">Autorizar</button> <button type="button" class="btn btn-danger" onclick="$.aceiteCadastro('N')">Recusar</button>
               </div> --}}
               <div class="card card-primary card-outline card-outline-tabs">

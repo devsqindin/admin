@@ -4,15 +4,15 @@
 
 	"sProcessing": "Processando...",
 
-	"sLengthMenu": "Listar _MENU_ por Pag.",
+	"sLengthMenu": "Listar _MENU_ itens por página",
 
-	"sZeroRecords": "Nenhum Registro.",
+	"sZeroRecords": "Nenhum registro.",
 
-	"sInfo": "Mostrando _START_ de _END_ de _TOTAL_ Registros",
+	"sInfo": "Mostrando os registros _START_ a _END_ de _TOTAL_ registros",
 
-	"sInfoEmpty": "Mostrando 0 de 0 de 0 Registros",
+	"sInfoEmpty": "Mostrando os registros 0 a 0 de um total de 0 registros",
 
-	"sInfoFiltered": "(Filtrados _MAX_  Maximo)",
+	"sInfoFiltered": "(filtrados de um total de _MAX_ registros)",
 
 	"sInfoPostFix": "",
 

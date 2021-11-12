@@ -42,7 +42,7 @@ class WelcomeUser extends Notification
     public function toMail($notifiable)
     {
         return (new MailMessage)->from('poderesponder@qindin.com.br','Qindin')
-        ->subject('[Qindin] Seja bem vindo(a) ao Desbankei!')
+        ->subject('[Qindin] Seja bem vindo(a) ao Qindin!')
         ->markdown('desbankei.welcome',['user'=>$this->user]);
     }
 
