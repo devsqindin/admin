@@ -255,7 +255,7 @@ class ParcelamentoController extends Controller
     	$user = Auth::user();
 
         // Return false para travar do lado da API o pedido de crédito.
-        //return response()->json(['success'=>false]);
+        return response()->json(['success'=>false]);
 
     	if ($user) {
 
