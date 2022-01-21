@@ -450,7 +450,7 @@ class UsuarioController extends Controller
             'updated_at'=>$updated_at,
             'regiao'=>$regiao,
             'uf'=>$uf,
-            'marca_celular'=>$request->marca_celular
+            'marca_celular'=>$request->marca_celular,
         ]);
 
         $tokenRequest = $request->create('/oauth/token', 'POST', $request->all());
