@@ -319,6 +319,12 @@ class UsuarioController extends Controller
             return response()->json(['success'=>false,'message'=>'É necessário aceitar o Termo de Uso e a Política de Privacidade para criar seu cadastro na Qindin']);
         }
 
+        if (!isset($request->marca_celular) || $request->marca_celular !== 'samsung') {
+
+            Log::debug('Usuário com dispositivo móvel de marca não SAMSUNG. Usuário: ', ['email' => $request->email]);
+            return response()->json(['success'=>false,'message'=>'É necessário ter um celular de marca SAMSUNG.']);
+        }
+
         DB::beginTransaction();
 
         if (Usuario::get()->where('cpf',$request->cpf)->first()) {
@@ -326,6 +332,7 @@ class UsuarioController extends Controller
             Log::debug('Já tem CPF cadastrado no sistema. Usuário: ', ['email' => $request->email]);
             return response()->json(['success'=>false,'message'=>'Este CPF já está cadastrado para um usuário Qindin, faça o acesso utilizando os dados do mesmo, em caso de dúvidas nos contacte.']);
         }
+
 
         $date = date_create('NOW');
         $created_at = date_format($date, 'Y-m-d H:i:s');
@@ -443,6 +450,7 @@ class UsuarioController extends Controller
             'updated_at'=>$updated_at,
             'regiao'=>$regiao,
             'uf'=>$uf,
+            'marca_celular'=>$request->marca_celular,
         ]);
 
         $tokenRequest = $request->create('/oauth/token', 'POST', $request->all());

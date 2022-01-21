@@ -25,6 +25,8 @@
 {!! Form::select("estado_civil","Estado Civil",[""=>"Selecione...","Solteiro(a)"=>"Solteiro(a)","Casado(a)"=>"Casado(a)","Divorciado(a)"=>"Divorciado(a)","Viúvo(a)"=>"Viúvo(a)"])->wrapperAttrs(['class'=>'col-md-4'])->required() !!}
 {!! Form::select("escolaridade","Escolaridade",[""=>"Selecione...","Ensino Fundamental Incompleto"=>"Ensino Fundamental Incompleto","Ensino Fundamental Completo"=>"Ensino Fundamental Completo","Ensino Médio Incompleto"=>"Ensino Médio Incompleto","Ensino Médio Completo"=>"Ensino Médio Completo","Ensino Superior Incompleto"=>"Ensino Superior Incompleto","Ensino Superior Completo"=>"Ensino Superior Completo","Pós-Graduação"=>"Pós-Graduação","Mestrado"=>"Mestrado","Doutorado"=>"Doutorado","Pós-Doutorado"=>"Pós-Doutorado"])->wrapperAttrs(['class'=>'col-md-4'])->required() !!}
 <div class="col-md-12"><hr/></div>
+{!! Form::text("marca_celular","Marca Celular")->wrapperAttrs(['class'=>'col-md-12']) !!}
+<div class="col-md-12"><hr/></div>
 <div class="col-md-12">
 <h5>Alteração de Senha <small>(opcional)</small></h5>
 </div>
