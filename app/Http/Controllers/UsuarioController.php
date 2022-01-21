@@ -592,7 +592,8 @@ class UsuarioController extends Controller
             }
         } else if ($etapa == 5) {
             $dados = [
-                'passo_cadastro'=>$etapa
+                'passo_cadastro'=>$etapa,
+                'opcao_documento'=>'b'
             ];
 
             $user->historicos()->create([
