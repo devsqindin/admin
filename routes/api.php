@@ -18,6 +18,10 @@ use Illuminate\Support\Facades\Route;
 //     dd(Auth::user());
 // });
 
+// ******** VERSIONING API ******** //
+Route::get('/version', 'UsuarioController@version');
+// ******************************** //
+
 Route::post('/login','UsuarioController@logInProtected');
 
 Route::post('/parcelamento/calcular2','ParcelamentoController@calcular2');
