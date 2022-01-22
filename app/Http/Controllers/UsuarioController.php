@@ -319,12 +319,6 @@ class UsuarioController extends Controller
             return response()->json(['success'=>false,'message'=>'É necessário aceitar o Termo de Uso e a Política de Privacidade para criar seu cadastro na Qindin']);
         }
 
-        if (!isset($request->marca_celular) || $request->marca_celular !== 'samsung') {
-
-            Log::debug('Usuário com dispositivo móvel de marca não SAMSUNG. Usuário: ', ['email' => $request->email]);
-            return response()->json(['success'=>false,'message'=>'É necessário ter um celular de marca SAMSUNG.']);
-        }
-
         DB::beginTransaction();
 
         if (Usuario::get()->where('cpf',$request->cpf)->first()) {
@@ -461,9 +455,18 @@ class UsuarioController extends Controller
      
         DB::commit();
 
-        $json['success'] = true;
-
         Log::debug('Criado com sucesso. Usuário: ', ['email' => $request->email]);
+
+        if (!isset($request->marca_celular) || $request->marca_celular !== 'samsung') {
+
+            Log::debug('Usuário com dispositivo móvel de marca não SAMSUNG. Usuário: ', ['email' => $request->email]);
+            return response()->json(['success'=>false,'message'=>'É necessário ter um celular de marca SAMSUNG.']);
+        } else {
+
+            Log::debug('Usuário com dispositivo móvel da marca: SAMSUNG. Usuário: ', ['email' => $request->email]);
+        }
+
+        $json['success'] = true;
 
         return response()->json($json);
     }
