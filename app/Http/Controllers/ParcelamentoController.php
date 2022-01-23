@@ -254,7 +254,7 @@ class ParcelamentoController extends Controller
     public function calcular(Request $request) {
     	$user = Auth::user();
 
-        // travando do lado da API o pedido de crédito.
+        // Return false para travar do lado da API o pedido de crédito.
         return response()->json(['success'=>false]);
 
     	if ($user) {
