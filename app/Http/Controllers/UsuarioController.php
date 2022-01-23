@@ -1111,4 +1111,12 @@ class UsuarioController extends Controller
         return view('resetemail',compact('alteraemail'));
     }
 
+    public function version(){
+        $version = env('APP_VERSION');
+        $maintenance = env('IS_MAINTENANCE');
+        return response()->json(['success' => true, 
+                                 'version' => $version,
+                                 'maintenance'=> $maintenance]);
+    }
+
 }
