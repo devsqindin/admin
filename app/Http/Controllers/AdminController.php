@@ -855,7 +855,7 @@ class AdminController extends Controller
         //$fp = fopen($filename, 'php://output', 'w');
         $fp = fopen($filename, 'w');
         
-        $headers = array("ID", "NOME COMPLETO", "CPF", "EMAIL", "WHATSAPP", "DATA NASCIMENTO", "STATUS FATURA",  "SITUAÇÃO CADASTRO");
+        $headers = array("ID", "NOME COMPLETO", "CPF", "EMAIL", "WHATSAPP", "DATA NASCIMENTO", "STATUS FATURA",  "SITUAÇÃO CADASTRO", "TIPO CONVITE", "CPF NEGATIVADO");
         
 
         $my_var_clientes = $meusClientesGrid->getData();
@@ -880,6 +880,7 @@ class AdminController extends Controller
 
             $status_fatura = $this->statusFaturaPorIdentificador($my_var_clientes->data[$rowCount]->status_fatura);
             $status = $this->statusClientePorIdentificador($my_var_clientes->data[$rowCount]->status);
+            $cpf_negativado = $this->cpfNegativadoPorCliente($my_var_clientes->data[$rowCount]->cpf_negativado);
 
             $row = array($my_var_clientes->data[$rowCount]->id, 
                             $my_var_clientes->data[$rowCount]->nome_completo, 
@@ -888,7 +889,9 @@ class AdminController extends Controller
                             $my_var_clientes->data[$rowCount]->whatsapp,
                             $my_var_clientes->data[$rowCount]->data_nascimento,
                             $status_fatura,
-                            $status);
+                            $status,
+                            $my_var_clientes->data[$rowCount]->perfil,
+                            $cpf_negativado);
             fputcsv($fp, $row, ',');
         }
 
@@ -932,7 +935,17 @@ class AdminController extends Controller
             case 4 : return "Cadastro Bloqueado"; break;
             case 5 : return "Recusa de Crédito"; break;
             case 6 : return "Bloqueio Falta Pgto"; break;
-          }
+        }
+    }
+
+    public function cpfNegativadoPorCliente($cpf_negativado) {
+
+        switch($cpf_negativado) {
+
+            case 0 : return "Não"; break;
+            case 1 : return "Sim"; break;
+            case null : return "NAO CONSULTADO AINDA"; break;
+        }
     }
 
     public function perguntas() {
