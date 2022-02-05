@@ -327,6 +327,11 @@ class UsuarioController extends Controller
             return response()->json(['success'=>false,'message'=>'Este CPF já está cadastrado para um usuário Qindin, faça o acesso utilizando os dados do mesmo, em caso de dúvidas nos contacte.']);
         }
 
+        if (Usuario::get()->where('email',$request->email)->first()) {
+
+            Log::debug('Já tem esse email cadastrado no sistema. Usuário: ', ['email' => $request->email]);
+            return response()->json(['success'=>false,'message'=>'Este e-mail já está cadastrado para um usuário Qindin, faça o acesso utilizando os dados do mesmo, em caso de dúvidas nos contacte.']);
+        }
 
         $date = date_create('NOW');
         $created_at = date_format($date, 'Y-m-d H:i:s');
