@@ -6,8 +6,8 @@ Olá, {{$user->nome_completo}}!
 
 @slot('corpo')
 <tr>
-  <td align="center" style="padding:0px 0px 0px 0px;font-family:'Source Sans Pro','Helvetica Neue',Calibre,Helvetica,Arial,sans-serif;font-weight:400;font-size:16px;line-height:24px;color:#666666;text-align:center">
-    <img src="https://media.giphy.com/media/st7RtYXtqAFMs/giphy.gif" width=100% />
+  <td align="center" style="padding:0px 0px 30px 0px;font-family:'Source Sans Pro','Helvetica Neue',Calibre,Helvetica,Arial,sans-serif;font-weight:400;font-size:16px;line-height:23px;color:#000;text-align:left; padding: 0 5%;">
+    <img src="https://media.giphy.com/media/st7RtYXtqAFMs/giphy.gif" width=100% style="margin-bottom: 64px;" />
     <p>
       <b>O seu convite do Qindin chegou!
       </b>
@@ -40,23 +40,13 @@ Olá, {{$user->nome_completo}}!
     </p>
     <!-- BOTÃO -->
     <tr>
-      <td align="center" style="padding:30px 0px 30px 0px">
+      <td align="center" style="padding:16px 0px 16px 0px">
         <a href='https://play.google.com/store/apps/details?id=com.qindin'>
           <img alt='Disponível no Google Play' src='https://play.google.com/intl/pt-BR/badges/static/images/badges/pt_badge_web_generic.png' width="220" />
         </a>
       </td>
     </tr>
     <!-- END BOTÃO -->
-  </td>
-</tr>
-
-<tr>
-  <td align="center" style="padding:0px 0px 0px 0px;font-family:'Source Sans Pro','Helvetica Neue',Calibre,Helvetica,Arial,sans-serif;font-weight:400;font-size:16px;line-height:24px;color:#666666;text-align:center">
-    <p>Conte com a gente,
-      <br>
-      <b>Equipe Qindin
-      </b>
-    </p>
   </td>
 </tr>
 @endslot

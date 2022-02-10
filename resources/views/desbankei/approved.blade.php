@@ -24,6 +24,7 @@
     <!-- END BOTÃO -->
   </td>
 </tr>
+
 @endslot
 
 @slot('email')

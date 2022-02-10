@@ -6,7 +6,7 @@ Olá, {{$user->nome_completo}}!
 
 @slot('corpo')
 <tr>
-  <td align="center" style="padding:0px 0px 16px 0px;font-family:'Source Sans Pro','Helvetica Neue',Calibre,Helvetica,Arial,sans-serif;font-weight:400;font-size:16px;line-height:24px;color:#666666;text-align:center">
+  <td align="center" style="padding:0px 0px 30px 0px;font-family:'Source Sans Pro','Helvetica Neue',Calibre,Helvetica,Arial,sans-serif;font-weight:400;font-size:16px;line-height:23px;color:#000;text-align:left; padding: 0 5%;">
     <p>Clique no link abaixo para autorizar a mudança do e-mail da conta de <b>{{$user->email}}</b> para <b>{{$user->new_email}}</b>:</p>
   </td>
 </tr>
@@ -20,13 +20,10 @@ Olá, {{$user->nome_completo}}!
 <!-- END BOTÃO -->
 
 <tr>
-  <td align="center" style="padding:16px 0px 0px 0px;font-family:'Source Sans Pro','Helvetica Neue',Calibre,Helvetica,Arial,sans-serif;font-weight:400;font-size:16px;line-height:24px;color:#666666;text-align:center">
+  <td align="center" style="padding:0px 0px 30px 0px;font-family:'Source Sans Pro','Helvetica Neue',Calibre,Helvetica,Arial,sans-serif;font-weight:400;font-size:16px;line-height:23px;color:#000;text-align:left; padding: 0 5%;">
     <p>Esse link irá expirar em 12 horas.</p>
     
     <p>Caso você não tenha pedido essa alteração, entre em contato com a gente o mais rápido possível.</p>
-    
-    <p>Conte com a gente,<br>
-    <b>Equipe Qindin</b></p>
  </td>
 </tr>
 @endslot

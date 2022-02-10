@@ -6,22 +6,21 @@ Olá, {{$user->nome_completo}}!
 
 @slot('corpo')
 <tr>
-  <td align="center" style="padding:0px 0px 0px 0px;font-family:'Source Sans Pro','Helvetica Neue',Calibre,Helvetica,Arial,sans-serif;font-weight:400;font-size:16px;line-height:24px;color:#666666;text-align:center">
+  <td align="center" style="padding:0px 0px 30px 0px;font-family:'Source Sans Pro','Helvetica Neue',Calibre,Helvetica,Arial,sans-serif;font-weight:400;font-size:16px;line-height:23px;color:#000;text-align:left; padding: 0 5%;">
     <p><b>Obrigado por seu interesse no Qindin!</b></p>
     <p>Fizemos uma análise interna sobre o seu pedido de crédito.</p>
     <p>Infelizmente, não conseguimos te conceder um limite de crédito nesse momento. Mas não se preocupe, você poderá tentar novamente daqui <b>3 meses</b>.</p>
 
     @if($user->motivo)
-    <h5>Informações do Motivo</h5>
+    <h5 style="font-weight:bold;font-size:16px;line-height:23px;color:#000;">Informações do Motivo</h5>
     <p>{{$user->motivo->mensagem}}</p>
     @endif
 
   </td>
 </tr>
 <tr>
-  <td align="center" style="padding:16px 0px 0px 0px;font-family:'Source Sans Pro','Helvetica Neue',Calibre,Helvetica,Arial,sans-serif;font-weight:400;font-size:16px;line-height:24px;color:#666666;text-align:center">
-    <p>Esperamos te ver em breve,<br>
-    <b>Equipe Qindin</b></p>
+  <td align="center" style="padding:0px 0px 30px 0px;font-family:'Source Sans Pro','Helvetica Neue',Calibre,Helvetica,Arial,sans-serif;font-weight:400;font-size:16px;line-height:23px;color:#000;text-align:left; padding: 0 5%;">
+    <p>Esperamos te ver em breve.<br>
  </td>
 </tr>
 @endslot
