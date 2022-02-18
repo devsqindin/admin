@@ -1,52 +1,28 @@
 @component('mail::tema')
 
 @slot('nome')
-Olá, {{$user->nome_completo}}!
+{{$user->nome_completo}},
+boas vindas ao futuro do crédito: sem julgamentos.
 @endslot
 
 @slot('corpo')
 <tr>
   <td align="center" style="padding:0px 0px 30px 0px;font-family:'Source Sans Pro','Helvetica Neue',Calibre,Helvetica,Arial,sans-serif;font-weight:400;font-size:16px;line-height:23px;color:#000;text-align:left; padding: 0 5%;">
-    <img src="https://media.giphy.com/media/st7RtYXtqAFMs/giphy.gif" width=100% style="margin-bottom: 64px;" />
-    <p>
-      <b>O seu convite do Qindin chegou!
-      </b>
-    </p>
-    <p>Mas tenha calma, isso não significa que você já tem um limite de crédito liberado! Para prosseguir com sua análise de crédito, basta seguir os passos abaixo:
-    </p>
-    <p>
-      <b>1.
-      </b> Baixe ou atualize o app Qindin na 
-      <a href="https://play.google.com/store/apps/details?id=com.qindin">Play Store
-      </a>.
-    </p>
-    <p>
-      <b>2.
-      </b> Clique em "Login".
-    </p>
-    <p>
-      <b>3.
-      </b> Selecione a opção "Esqueceu sua senha?".
-    </p>
-    <p>
-      <b>4.
-      </b> Insira seu e-mail cadastrado no Qindin e clique em "Solicitar".
-    </p>
-    <p>
-      <b>5.
-      </b> Você receberá um e-mail de redefinição de senha. Após criar sua senha, basta voltar para o app Qindin, fazer o login com a senha cadastrada e seguir os passos na tela.
-    </p>
-    <p>😊
-    </p>
-    <!-- BOTÃO -->
-    <tr>
-      <td align="center" style="padding:16px 0px 16px 0px">
-        <a href='https://play.google.com/store/apps/details?id=com.qindin'>
-          <img alt='Disponível no Google Play' src='https://play.google.com/intl/pt-BR/badges/static/images/badges/pt_badge_web_generic.png' width="220" />
-        </a>
-      </td>
-    </tr>
-    <!-- END BOTÃO -->
+    <p>Você já sabe que a Qindin nasceu com a missão de inovar e facilitar o acesso ao crédito para <b>todos</b>, sem julgamentos.<br><br>
+      
+      <b>Por isso, aqui está o seu convite para fazer parte da Qindin.</b> Mas tenha calma, isso não significa que você já tem um limite de crédito liberado! Para prosseguir com sua análise de crédito, basta seguir os passos abaixo:<br><br>
+      
+      <b>1.</b> Baixe ou atualize o app da Brelo para usar o seu smartphone como garantia Qindin na <a href="https://play.google.com/store/apps/details?id=com.brelo.score">Play Store</a>.<br>
+      <b>2.</b> Após a instalação, clique em seu <a href="https://breloscore.page.link/?link=https://play.google.com/store/apps/details?id%3Dcom.brelo.score%26token%3D{{$token}}&apn=com.brelo.score&utm_campaign=t3&utm_medium=t2&utm_source=t1&efr=1">link personalizado</a> e realize o procedimento conforme os passos demonstrados em sua tela.<br>
+      <b>3.</b> Aguarde o contato de nosso time com o resultado da avaliação do seu smartphone para saber se você possui um limite pré-aprovado na Qindin.<br><br>
+      <b>Fácil, não é? Além disso, só na Qindin você tem as vantagens:</b><br><br>
+      <b>&#10003;</b> Sem multas e juros por atraso.<br>
+      <b>&#10003;</b> Sem precisar ter bens caros quitados para oferecer como garantia.<br>
+      <b>&#10003;</b> Ganhe descontos por antecipação.<br>
+      <b>&#10003;</b> Mesmo negativado ou com baixo score.<br>
+      <b>&#10003;</b> Totalmente empático.<br>
+      <b>&#10003;</b> 100% transparente.<br><br>
+      E isso é <b>apenas o começo</b>.<br><br></p>
   </td>
 </tr>
 @endslot
