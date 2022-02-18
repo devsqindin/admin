@@ -1317,12 +1317,15 @@ class AdminController extends Controller
         }
 
         if ($request->acao_executar == 'LCAD') {
+            Log::debug("LCAD - Acao executar ");
+
             if ($this->validaDocumentos($usuario)) {
                 $usuario->status = 3;
                 $usuario->cadastro_finalizado = 1;
                 $usuario->save();
                 Notification::send($usuario, new Approved($usuario));
             } else {
+                Log::debug("Valida documento return false");
                 $usuario->status = 2;
                 $usuario->save();
             }

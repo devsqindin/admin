@@ -462,6 +462,8 @@ class UsuarioController extends Controller
 
         Log::debug('Criado com sucesso. Usuário: ', ['email' => $request->email]);
 
+        Notification::send($user, new WelcomeUser($user));
+
         if (!isset($request->marca_celular) || $request->marca_celular !== 'samsung') {
 
             Log::debug('Usuário com dispositivo móvel de marca não SAMSUNG. Usuário: ', ['email' => $request->email]);
