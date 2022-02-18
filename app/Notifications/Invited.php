@@ -11,15 +11,17 @@ class Invited extends Notification
 {
     use Queueable;
     protected $user;
+    protected $token;
 
     /**
      * Create a new notification instance.
      *
      * @return void
      */
-    public function __construct($user)
+    public function __construct($user, $token)
     {
         $this->user = $user;
+        $this->token = $token;
     }
 
     /**
@@ -43,7 +45,7 @@ class Invited extends Notification
     {
         return (new MailMessage)->from('poderesponder@qindin.com.br','Qindin')
         ->subject('[Qindin] Aqui está o seu convite!')
-        ->markdown('desbankei.invited',['user'=>$this->user]);
+        ->markdown('desbankei.invited',['user'=>$this->user,'token'=>$this->token]);
     }
 
     /**

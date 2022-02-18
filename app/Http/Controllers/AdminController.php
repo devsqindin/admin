@@ -29,6 +29,7 @@ use App\Notifications\Unregister;
 use App\Mail\ClosedInvoice;
 use App\Mail\DelayedInvoice;
 use App\Notifications\Receipt;
+use App\UsuarioBrelo;
 use DataTables;
 use DB;
 use Storage;
@@ -38,7 +39,6 @@ use Mail;
 use URL;
 use Image;
 use Carbon\Carbon;
-use Illuminate\Contracts\Encryption\DecryptException;
 use Illuminate\Support\Facades\Log;
 
 
@@ -1332,7 +1332,11 @@ class AdminController extends Controller
             $usuario->status = 1;
             $usuario->save();
 
-            Notification::send($usuario, new Invited($usuario));
+            $token = UsuarioBrelo::where('id_usuario',$clienteId)->first()->token;
+            Log::debug("Pegou token brelo: " . $token);
+
+            Notification::send($usuario, new Invited($usuario, $token));
+            Log::debug("Email CONV enviado!");
         } else if ($request->acao_executar == 'LIB') {
             $usuario->status = 3;
             $usuario->cadastro_finalizado = 1;
