@@ -85,7 +85,7 @@
                                                <!-- RODAPÉ -->
      <tr>
 <td align="center" style="padding:16px 0px 0px 0px">
-<p style="text-align:left;width: 90%; height: auto;font-family:'Source Sans Pro','Helvetica Neue',Calibre,Helvetica,Arial,sans-serif;display: inline-block;text-decoration: none;-webkit-border-radius: 3px;-moz-border-radius: 3px;border-radius: 3px;background-color: #ededed;font-size: 16px;line-height:23px;padding: 5%;" target="_blank"><b>Conte com a gente,</b><br>
+<p style="text-align:left;width: 90%; height: auto;font-family:'Source Sans Pro','Helvetica Neue',Calibre,Helvetica,Arial,sans-serif;display: inline-block;text-decoration: none;-webkit-border-radius: 3px;-moz-border-radius: 3px;border-radius: 3px;background-color: #ededed;font-size: 16px;line-height:23px;padding: 5%;color:#000" target="_blank"><b>Conte com a gente,</b><br>
 Equipe Qindin<br><br>
   Nosso atendimento é de segunda à sexta-feira, das 09h às 18h. Para falar com o nosso time, responda essa mensagem aqui mesmo ou através do <b><a style="color: #000;" href="https://api.whatsapp.com/send?phone=5515988420833&text=Ol%C3%A1!%20Li%20o%20e-mail%20que%20a%20Qindin%20me%20enviou%20e%20preciso%20de%20ajuda.">WhatsApp</a></b>.</p>
 </td>
