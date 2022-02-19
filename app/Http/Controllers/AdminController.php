@@ -80,6 +80,7 @@ class AdminController extends Controller
     }
 
     public function fazerLogin(Request $request) {
+        Log::debug("QINDIN/WEB - Admin trying to login: ", ['email' => $request->email]);
         if(Auth::guard('admin')->attempt($request->only('email','password'))){
             
             UsuarioHistorico::create([
@@ -90,8 +91,10 @@ class AdminController extends Controller
                 'datahora'=>date("Y-m-d H:i:s")
             ]);
             //Authentication passed...
+            Log::debug("QINDIN/WEB - Login okay: ", ['email' => $request->email]);
             return redirect()->intended(route('admin.clientes'));
         }
+        Log::debug("QINDIN/WEB - Admin login fail! ", ['email' => $request->email]);
         //Authentication failed...
         return $this->falhaLogin();
     }
@@ -1302,6 +1305,8 @@ class AdminController extends Controller
     public function postAcao($clienteId, Request $request) {
         $usuario = Usuario::find($clienteId);
 
+        Log::debug("QINDIN/WEB - Admin manually doing an action! ", ['email' => Auth::user()->email, 'action' => $request->acao_executar]);
+
         $acoes = [
             'CONV'=>'Liberar Convite',
             'LIB'=>'Liberar Cadastro',
@@ -1318,7 +1323,7 @@ class AdminController extends Controller
         }
 
         if ($request->acao_executar == 'LCAD') {
-            Log::debug("LCAD - Acao executar ");
+            Log::debug("QINDIN/WEB - LCAD - Acao executar");
 
             if ($this->validaDocumentos($usuario)) {
                 $usuario->status = 3;
@@ -1326,35 +1331,40 @@ class AdminController extends Controller
                 $usuario->save();
                 Notification::send($usuario, new Approved($usuario));
             } else {
-                Log::debug("Valida documento return false");
+                Log::debug("QINDIN/WEB - validaDocumentos() returned false");
                 $usuario->status = 2;
                 $usuario->save();
             }
         } else if ($request->acao_executar == 'CONV') {
+            Log::debug("QINDIN/WEB - CONV - Liberar Convite");
             $usuario->aceito = 1;
             $usuario->passo_cadastro = 1;
             $usuario->status = 1;
             $usuario->save();
 
             $token = UsuarioBrelo::where('id_usuario',$clienteId)->first()->token;
-            Log::debug("Pegou token brelo: " . $token);
+            Log::debug("QINDIN/WEB - CONV got brelo token " . $token);
 
             Notification::send($usuario, new Invited($usuario, $token));
-            Log::debug("Email CONV enviado!");
+            Log::debug("QINDIN/WEB - CONV email sent!", ['user' => $usuario->email]);
         } else if ($request->acao_executar == 'LIB') {
+            Log::debug("QINDIN/WEB - LIB - Liberar Cadastro");
             $usuario->status = 3;
             $usuario->cadastro_finalizado = 1;
             $usuario->save();
         } else if ($request->acao_executar == 'RCAD') {
+            Log::debug("QINDIN/WEB - RCAD - Recusa/Bloqueio de Cadastro");
             $usuario->status = 4;
             $usuario->cadastro_finalizado = null;
             $usuario->save();
             Notification::send($usuario, new Unregister($usuario));
         } else if ($request->acao_executar == 'RCRE') {
+            Log::debug("QINDIN/WEB - RCRE - Recusa de Crédito");
             $usuario->status = 5;
             $usuario->save();
             Notification::send($usuario, new Rejected($usuario));
         } else if ($request->acao_executar == 'BPAG') {
+            Log::debug("QINDIN/WEB - BPAG - Bloqueio por Falta de Pagamento");
             $usuario->status = 6;
             $usuario->save();
             Notification::send($usuario, new Blocked($usuario));
@@ -2069,6 +2079,7 @@ class AdminController extends Controller
     }
 
     public function recalculaFatura($faturaId) {
+        Log::debug("QINDIN/WEB - calling recalculaFatura");
         $fatura = Fatura::find($faturaId);
         $valor_fatura = 0;
         foreach($fatura->parcelas as $prc) {
@@ -2085,6 +2096,7 @@ class AdminController extends Controller
     }
 
     public function recalculaLimites($usuario) {
+        Log::debug("QINDIN/WEB - calling recalculaLimites");
         $limiteInicial = $usuario->limite_total;
         $limiteSolicitado = 0;
         $limiteRecuperado = 0;
