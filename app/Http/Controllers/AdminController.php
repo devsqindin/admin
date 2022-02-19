@@ -1422,6 +1422,7 @@ class AdminController extends Controller
         } else if ($usuario->status >= 4){
             $acoes = [
                 'LCAD'=>'Liberar Cadastro',
+                'CONV'=>'Liberar Convite',
                 'DEL'=>'Excluir conta do cliente',
             ];
         }
