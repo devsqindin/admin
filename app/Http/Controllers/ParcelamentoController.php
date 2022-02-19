@@ -14,6 +14,7 @@ use App\Notifications\ClosedInvoice;
 use App\Notifications\DelayedInvoice;
 use DB;
 use Storage;
+use Illuminate\Support\Facades\Log;
 
 class ParcelamentoController extends Controller
 {
@@ -80,6 +81,7 @@ class ParcelamentoController extends Controller
     }
 
     public function apiSimularFiducia($valor,$valor_tac,$vencimento,$meses,$juros) {
+        Log::debug('QINDIN-PARCELAMENTO - calling apiSimularFiducia: ');
         $curlHandler = curl_init();
         $userName = env('FIDUCIA_USER');
         $password = env('FIDUCIA_PASS');
@@ -225,6 +227,7 @@ class ParcelamentoController extends Controller
 
     public function calcular2(Request $request) {
         $user = Usuario::find(1);
+        Log::debug('QINDIN-PARCELAMENTO - calcular2, user requesting credits: ');
         if ($user) {
 
             $parcelas = [];
@@ -292,15 +295,18 @@ class ParcelamentoController extends Controller
 
     public function confirmar(Request $request) {
         $user = Auth::user();
+        Log::debug('QINDIN-PARCELAMENTO - calcular2, user confirming credits: start');
         if ($user) {
             $token = md5("A".$user->id."XX".$request->parcelas."XX".$request->valor_solicitado);
             return response()->json(['success'=>true,'token'=>$token]);
         }
+        Log::debug('QINDIN-PARCELAMENTO - calcular2, user confirming credits: success');
         return response()->json(['success'=>false]);
     }
 
     public function registrar(Request $request) {
         $user = Auth::user();
+        Log::debug('QINDIN-PARCELAMENTO - calcular2, user registering credits: start');
         if ($user && $user->validateForPassportPasswordGrant($request->password)) {
             DB::beginTransaction();
 
@@ -372,11 +378,13 @@ class ParcelamentoController extends Controller
                 //Notification::send($user, new Analyze($user));
 
                 DB::commit();
-
+                Log::debug('QINDIN-PARCELAMENTO - calcular2, user registering credits: success');
                 return response()->json(['success'=>true,'data_contrato'=>date("d/m/Y",$this->dataContrato())]);
             }
+            Log::debug('QINDIN-PARCELAMENTO - calcular2, user registering credits: fail token');
             return response()->json(['success'=>false]);
         } else {
+            Log::debug('QINDIN-PARCELAMENTO - calcular2, user registering credits: fail password');
             return response()->json(['success'=>false,'error'=>'Senha inválida']);
         }
     }
