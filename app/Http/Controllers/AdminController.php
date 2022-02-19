@@ -652,7 +652,8 @@ class AdminController extends Controller
 
     private function validaDocumentos($usuario) {
         if (($usuario->opcao_documento == 'rg' && $usuario->rg_frente==1 && $usuario->rg_verso==1 && $usuario->cpf_frente==1) || ($usuario->opcao_documento == 'cnh' && $usuario->cnh_frente==1)) {
-                if ($usuario->foto_doc==1 && $usuario->comprovante_residencia==1 && $usuario->extrato_bancario==1) {
+                //if ($usuario->foto_doc==1 && $usuario->comprovante_residencia==1 && $usuario->extrato_bancario==1) {
+                if ($usuario->foto_doc==1) {
                     return true;
                 }
         }

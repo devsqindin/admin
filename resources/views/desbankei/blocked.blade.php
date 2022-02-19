@@ -13,7 +13,6 @@ Olá, {{$user->nome_completo}}!
     <p>• Diminuição do seu score personalizado no Qindin;</p>
     <p>• Diminuição de score nos birôs de crédito;</p>
     <p>• Negativação de CPF.</p>
-    <p>Estamos aqui por você! 😉</p>
   </td>
 </tr>
 @endslot
