@@ -271,9 +271,7 @@ class UsuarioController extends Controller
         }
     }
 
-    public function logInProtected(Request $request)
-    {
-
+    public function logInProtected(Request $request){
         Log::debug("POST: QINDIN-API/login");
         Log::debug('Usuário tentando fazer login: ', ['email' => $request->username]);
 
@@ -290,10 +288,10 @@ class UsuarioController extends Controller
             $json['user']['limite_utilizado'] = $user['limite_utilizado'];
             $json['success'] = true;
 
-            Log::debug('Usuário logou com sucesso: ', ['id' => $user->id, 'email' => $user->email]);
+            Log::debug('Usuário logou com sucesso: ', ['user' => $request->username]);
             return response()->json($json);
         } else {
-            Log::debug('Usuário falhou no login: ', ['id' => $user->id, 'email' => $user->email]);
+            Log::debug('Usuário falhou no login: ', ['user' => $request->username]);
             return response()->json(['success'=>false,'message'=>'E-mail ou senha incorretos']);
         }
     }

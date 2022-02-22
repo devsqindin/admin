@@ -1343,6 +1343,7 @@ class AdminController extends Controller
             $usuario->save();
 
             $token = UsuarioBrelo::where('id_usuario',$clienteId)->first()->token;
+            
             Log::debug("QINDIN/WEB - CONV got brelo token " . $token);
 
             Notification::send($usuario, new Invited($usuario, $token));
