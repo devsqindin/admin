@@ -44,9 +44,9 @@ class UsuarioController extends Controller
             case "09":    $mes = "Setembro";    break;
             case "10":    $mes = "Outubro";     break;
             case "11":    $mes = "Novembro";    break;
-            case "12":    $mes = "Dezembro";    break; 
+            case "12":    $mes = "Dezembro";    break;
         }
-     
+
      return $mes;
     }
 
@@ -61,14 +61,14 @@ class UsuarioController extends Controller
     }
 
     public function belvoLink(Request $request) {
-       
+
         $user = Auth::user();
         $userId = $user->id;
 
         $user->belvo_link = $request->link;
- 
+
         $user->opcao_documento = 'b';
- 
+
         $user->save();
 
         $institution = $request->institution;
@@ -138,7 +138,7 @@ class UsuarioController extends Controller
         $body = substr($response, $header_size);
 
         curl_close($curlHandler);
-    
+
 
         return response($response);
     }
@@ -152,7 +152,7 @@ class UsuarioController extends Controller
         }
         return response()->json(['success'=>$success]);
     }
-    
+
     public function sendNotification()
     {
         $user = Usuario::find(62);
@@ -186,6 +186,7 @@ class UsuarioController extends Controller
         $password = env('BELVO_PASS');
         $postfield = json_encode($postfieldJson);
         $curlHandler = curl_init();
+        
 
         curl_setopt_array($curlHandler, [
             CURLOPT_URL => "https://".env('BELVO_URL')."/api/".$type."/",
@@ -210,15 +211,15 @@ class UsuarioController extends Controller
         ]);
 
         $response = curl_exec($curlHandler);
-        
+
         $http_code = curl_getinfo($curlHandler, CURLINFO_HTTP_CODE);
         $header_size = curl_getinfo($curlHandler, CURLINFO_HEADER_SIZE);
         $header = substr($response, 0, $header_size);
         $body = substr($response, $header_size);
 
-        /* 
-            Error handling: 
-            https://docs.belvo.com/#operation/RetrieveBalances 
+        /*
+            Error handling:
+            https://docs.belvo.com/#operation/RetrieveBalances
             https://docs.belvo.com/#operation/RetrieveTransactions
         */
         if($http_code === 200 || $http_code === 201) {
@@ -233,13 +234,13 @@ class UsuarioController extends Controller
         } else if ($http_code === 500) {
 
             $i = 0;
-            
+
             while($i++ < $this->curlExecRetryMax) {
-                
+
                 sleep($this->interval);
                 $response = curl_exec($curlHandler);
                 $http_code = curl_getinfo($curlHandler, CURLINFO_HTTP_CODE);
-                
+
                 if($http_code === 200 || $http_code === 201) {
 
                     UsuarioBelvo::create([
@@ -247,7 +248,7 @@ class UsuarioController extends Controller
                         'type'=>$type,
                         'id_usuario'=>$user->id,
                     ]);
-        
+
                     return;
                 } else {
 
@@ -259,27 +260,113 @@ class UsuarioController extends Controller
                     }
                 }
             }
-            
+
         } else if ($http_code === 400 && (str_contains($header, "too_many_sessions" || str_contains($body, "too_many_sessions")))) {
 
             curl_close($curlHandler);
             return;
         } else {
-            
+
             curl_close($curlHandler);
             return;
         }
+    }
+
+    public function pegaCliente($clienteId) {
+        $usuario = Usuario::where('id',$clienteId)->where('status','!=',7)->first();
+        if ($usuario->taxa_juros) {
+            $usuario->taxa_juros = number_format($usuario->taxa_juros*100,2,',','');
+        }
+        echo $usuario->getBody();
+        return response()->json($usuario);
+        
+    }
+
+    public function createPerson($token){
+
+        $client = $this->pegaCliente(3);
+
+        $url = env('CELCOIN_URL');
+
+        $client = new \GuzzleHttp\Client(array( 'curl' => array( CURLOPT_SSL_VERIFYPEER => false, ), ));
+
+        $response = $client->request('POST', $url.'banking/originator/persons', [
+        'body' => '{
+                "phone":{
+                    "country_code":"555","area_code":"015",
+                    "number":"999999999"
+                },
+                "taxpayer_id":"35370996067",
+                "full_name":"Nome",
+                "nationality":"Teste",
+               
+                "occupation":"Testando"
+            }',
+        'headers' => [
+            'accept' => 'application/json',
+            'authorization' => 'Bearer '.$token,
+            'content-type' => 'application/json',
+        ],
+    ]);
+
+    echo $response->getBody();
+
+    $personResponse = json_decode($response->getBody(),true);
+    
+    return $personResponse;
+    }
+
+    public function getCelcoinToken(){
+
+        // require_once('vendor/autoload.php');
+
+        $url = env('CELCOIN_URL_AUTH');
+        $username =  env('CELCOIN_TOKEN_USERNAME');
+        $password = env('CELCOIN_TOKEN_PASSWORD');
+
+        $credentials = base64_encode('$username:$password');
+
+        // Log::error($credentials);
+
+        $client = new \GuzzleHttp\Client(array( 'curl' => array( CURLOPT_SSL_VERIFYPEER => false, ), ));
+
+        $response = $client->request('POST', $url.'oauth2/token', [
+
+            'form_params' => [
+                'grant_type' => 'client_credentials'
+              ],
+              'headers' => [
+                'accept' => 'application/json',
+                'authorization' => 'Basic NGJvdTI1cGFzaW9nbmtwN3ZuYzEwNWwwbjY6MWVjZTJlZzY1M2Q2cW83aXNvY2M1NWY2Nm9zMW42dnBsYWQyYmw1ZzZ2dWN0cXQza3Vubg==',
+                'content-type' => 'application/x-www-form-urlencoded',
+              ],
+  ],
+);
+
+    $responseToken = json_decode($response->getBody(),true);
+    $token = $responseToken['access_token'];
+    // echo $token;
+
+    return $token;
+
     }
 
     public function logInProtected(Request $request){
         Log::debug("POST: QINDIN-API/login");
         Log::debug('Usuário tentando fazer login: ', ['email' => $request->username]);
 
+
         $tokenRequest = $request->create('/oauth/token', 'POST', $request->all());
+        $celcoinTokenRequest = $this->getCelcoinToken();
+        $createPerson = $this->createPerson($celcoinTokenRequest);
+
+        Log::debug('Celcoin token: ', ['token' => $celcoinTokenRequest]);
+
+
         $response = Route::dispatch($tokenRequest);
         $json = (array) json_decode($response->getContent());
         $user = Usuario::get()->where('email',$request->username)->first();
-        
+
         if ($user && isset($json['access_token'])){
             $pnome = explode(" ",$user['nome_completo']);
             $json['user']['nome_completo'] = strtolower($pnome[0]);
@@ -287,6 +374,7 @@ class UsuarioController extends Controller
             $json['user']['limite_total'] = $user['limite_total'];
             $json['user']['limite_utilizado'] = $user['limite_utilizado'];
             $json['success'] = true;
+            $json['token'] = $celcoinTokenRequest;
 
             Log::debug('Usuário logou com sucesso: ', ['user' => $request->username]);
             return response()->json($json);
@@ -299,7 +387,7 @@ class UsuarioController extends Controller
     public function bancos() {
 
         Log::debug("GET: QINDIN-API/bancos");
-        
+
         $bancos = DB::select("SELECT codigo, UPPER(nome) AS nome FROM bancos ORDER BY nome");
 
         Log::debug('Lista de bancos retornada com sucesso: ', ['bancos' => $bancos->bancos]);
@@ -310,7 +398,7 @@ class UsuarioController extends Controller
     public function userStartConvite(Request $request) {
 
         Log::debug("POST: QINDIN-API/user/startconvite para: EMAIL: " . $request->email);
-    
+
         if (!isset($request->termos) && $request->termos != 'true') {
 
             Log::debug('Não aceitou os termos. Usuário: ', ['email' => $request->email]);
@@ -344,7 +432,7 @@ class UsuarioController extends Controller
         $ddd = substr($var_whatsapp, 0, 2); /* 9999999-9999 -> 99 */
 
         $uf_regiao = array (
-        
+
             array(11, "SP", "São Paulo"),
             array(12, "SP", "São José dos Campos"),
             array(13, "SP", "Santos"),
@@ -433,11 +521,11 @@ class UsuarioController extends Controller
             'whatsapp'=>$var_whatsapp,
             'email'=>trim($request->email),
             'cpf'=>trim($request->cpf),
-            'perfil'=>trim($request->perfil),   
-            
-            'cpf_negativado'=>$var_cpf_negativado,  
+            'perfil'=>trim($request->perfil),
+
+            'cpf_negativado'=>$var_cpf_negativado,
             'banco_credenciado'=>$var_banco_credenciado,
-            
+
             'banco_nome'=>trim($request->banco_nome),
             'aceito'=>$request->termos,
             'password'=>$request->password,
@@ -455,7 +543,7 @@ class UsuarioController extends Controller
         $json = (array) json_decode($response->getContent());
 
         //falta calcular regiao e uf, e deployar
-     
+
         DB::commit();
 
         Log::debug('Criado com sucesso. Usuário: ', ['email' => $request->email]);
@@ -516,7 +604,7 @@ class UsuarioController extends Controller
             } else {
                 return response()->json(['success'=>false,'user'=>$user]);
             }
-            
+
             $json['success'] = true;
 
             return response()->json($json);
@@ -595,7 +683,7 @@ class UsuarioController extends Controller
                     'ocupacao'=>$request->ocupacao,
                     'restritivo'=>$request->restritivo,
                     'renda_comprovada'=>$request->renda_comprovada,
-                    'vence_fatura'=>$request->vence_fatura, 
+                    'vence_fatura'=>$request->vence_fatura,
                     'credito_aprovado'=>0,
                     'limite_disponivel'=>0,
                     'limite_total'=>0,
@@ -689,7 +777,7 @@ class UsuarioController extends Controller
             $request->renda_comprovada = $this->fNum($request->renda_comprovada);
 
             // validar alteração de renda ou vencimento fatura
-            if (isset($logged->renda_comprovada) && $logged->renda_comprovada > 0) { 
+            if (isset($logged->renda_comprovada) && $logged->renda_comprovada > 0) {
                 if (isset($request->renda_comprovada) && $logged->renda_comprovada != $request->renda_comprovada) {
                     if (date("U") < date("U",strtotime($logged->limite_renda." +90 days"))) {
                         return response()->json(['success'=>false,'message'=>'Sua renda só pode ser alterada 90 dias depois do cadastro ou última alteração.']);
@@ -702,7 +790,7 @@ class UsuarioController extends Controller
                     }
                 }
             }
-            
+
             $dados = [
                 'profissao'=>$request->profissao,
                 'ocupacao'=>$request->ocupacao,
@@ -779,7 +867,7 @@ class UsuarioController extends Controller
 
     // dashboard app - carregando dados usuário
     public function userHome() {
-  
+
         $user = Auth::user();
         Log::debug("GET: QINDIN-API/user/home para ID: " . $user->id . " EMAIL: " . $user->email . " STATUS: " . $user->status);
 
@@ -887,7 +975,7 @@ class UsuarioController extends Controller
             'M'=>'Masculino',
             'F'=>'Feminino'
         ];
-        
+
         $user = Auth::user();
 
         Log::debug("GET: QINDIN-API/user para ID: " . $user->id . " EMAIL: " . $user->email . " STATUS: " . $user->status);
@@ -908,9 +996,9 @@ class UsuarioController extends Controller
             Log::debug("GET: QINDIN-API/user -> query('tela')");
             $bancos = DB::select("SELECT codigo, UPPER(nome) AS nome FROM bancos ORDER BY nome");
             $user['bancos'] = $bancos;
-            $json = ['success'=>true,'user'=>$user,'bancos'=>$bancos];    
+            $json = ['success'=>true,'user'=>$user,'bancos'=>$bancos];
         }
-        
+
         $json = ['success'=>true,'user'=>$user];
 
         Log::debug("Registro encontrado e verificado com sucesso. Usuário: ", ['id' => $user->id]);
@@ -971,7 +1059,7 @@ class UsuarioController extends Controller
     }
 
     public function userAntecipa(Request $request) {
-        
+
         $user = Auth::user();
 
         Log::debug("POST: QINDIN-API/user/antecipa para ID: " . $user->id . " EMAIL: " . $user->email);
@@ -1090,7 +1178,7 @@ class UsuarioController extends Controller
                 $arrperg[$perg['id']] = ['pergunta'=>$perg['pergunta'],'sub'=>[]];
             } else {
                 $arrperg[$perg['parent']]['sub'][] = ['pergunta'=>$perg['pergunta'],'resposta'=>$perg['resposta'],'parent'=>$perg['parent']];
-                
+
                 $sub = DB::select("SELECT * FROM perguntas WHERE resposta = 'x' AND parent = ?",[$perg['id']]);
                 if ($sub) {
                     $arrperg[$perg['parent']]['sub'][] = ['pergunta'=>$sub[0]->pergunta];
@@ -1100,7 +1188,7 @@ class UsuarioController extends Controller
         //dd($arrperg);
         return view('faq',compact('arrperg'));
     }
-        
+
     public function resetEmail(Request $request) {
         $alteraemail = false;
 
@@ -1119,7 +1207,7 @@ class UsuarioController extends Controller
     public function version(){
         $version = env('APP_VERSION');
         $maintenance = env('IS_MAINTENANCE');
-        return response()->json(['success' => true, 
+        return response()->json(['success' => true,
                                  'version' => $version,
                                  'maintenance'=> $maintenance]);
     }

@@ -80,6 +80,50 @@ class ParcelamentoController extends Controller
         }
     }
 
+    public function getLoanPreview(
+    $token, 
+    $schedule_type, 
+    $interest_rate, 
+    $requested_amount, 
+    $tac_amount, 
+    $finance_fee, 
+    $num_payments, 
+    $first_payment_date, 
+    $disbursement_date, 
+    $iof_type){
+
+        $celcoinTokenRequest = $this->getCelcoinToken();
+
+        $client = new \GuzzleHttp\Client(array( 'curl' => array( CURLOPT_SSL_VERIFYPEER => false, ), ));
+
+        $response = $client->request('POST', 'https://sandbox.platform.flowfinance.com.br/banking/originator/applications/preview', [
+            'body' => '{
+            "schedule_type":"MONTHLY",
+            "interest_rate":1.5,
+            "requested_amount":50000,
+            "tac_amount":1.5,
+            "finance_fee":1.5,
+            "num_payments":1,
+            "first_payment_date":"date("Y-m-d")+2",
+            "disbursement_date":"02-03-2023",
+            "iof_type":"PERSON"
+            }',
+
+  'headers' => [
+    'accept' => 'application/json',
+    'authorization' => 'Bearer '.$token,
+    'content-type' => 'application/json',
+  ],
+]);
+
+    echo $response->getBody();
+
+    $previewResponse = json_decode($response->getBody(),true);
+    
+    return $previewResponse;
+
+    }
+
     public function apiSimularFiducia($valor,$valor_tac,$vencimento,$meses,$juros) {
         Log::debug('QINDIN-PARCELAMENTO - calling apiSimularFiducia: ');
         $curlHandler = curl_init();
